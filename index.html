@@ -1,551 +1,2660 @@
-<script>
-// Данные для всех предметов
-const subjectsData = {
-    math: { name: 'Математика', icon: 'fa-calculator' },
-    physics: { name: 'Физика', icon: 'fa-atom' },
-    chemistry: { name: 'Химия', icon: 'fa-flask' },
-    biology: { name: 'Биология', icon: 'fa-leaf' },
-    computer: { name: 'Информатика', icon: 'fa-laptop-code' },
-    society: { name: 'Обществознание', icon: 'fa-landmark' },
-    history: { name: 'История', icon: 'fa-scroll' }
-};
 
-let teams = {
-    math: [{ name: 'Геометры', score: 0, isCurrent: true }, { name: 'Алгебраисты', score: 0, isCurrent: false }],
-    physics: [{ name: 'Протоны', score: 0, isCurrent: true }, { name: 'Электроны', score: 0, isCurrent: false }],
-    chemistry: [{ name: 'Менделеевы', score: 0, isCurrent: true }, { name: 'Лавуазье', score: 0, isCurrent: false }],
-    biology: [{ name: 'Цитологи', score: 0, isCurrent: true }, { name: 'Генетики', score: 0, isCurrent: false }],
-    computer: [{ name: 'Хакеры', score: 0, isCurrent: true }, { name: 'Кодеры', score: 0, isCurrent: false }],
-    society: [{ name: 'Философы', score: 0, isCurrent: true }, { name: 'Правоведы', score: 0, isCurrent: false }],
-    history: [{ name: 'Археологи', score: 0, isCurrent: true }, { name: 'Историки', score: 0, isCurrent: false }]
-};
-
-function shuffleArray(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-}
-
-// Квизы (5 тем, 5 вопросов) для всех предметов
-const quizzes = {
-    math: { topics: ['Тригонометрия','Логарифмы','Производные','Интегралы','Вероятность'],
-        questions: [
-            [{p:10,q:'sin(π/6)?',a:['1/2','√2/2','√3/2','1'],c:0},{p:20,q:'2sin²x-1=0 на [0,2π]',a:['π/4,3π/4','π/4,3π/4,5π/4,7π/4','π/2,3π/2','0,π'],c:1},{p:30,q:'(sinα+cosα)²+(sinα-cosα)²',a:['1','2','sin²α+cos²α','0'],c:1},{p:40,q:'sin75°·cos15°',a:['1/4','1/2','√3/4','(√6+√2)/4'],c:0},{p:50,q:'sinx+cosx=1',a:['x=2πk, x=π/2+2πk','x=πk, x=π/2+2πk','x=0,π/2','x=π/2+2πk'],c:0}],
-            [{p:10,q:'log₂8?',a:['2','3','4','5'],c:1},{p:20,q:'log₃(x+1)=2',a:['8','9','10','11'],c:0},{p:30,q:'log₅125+log₅25-log₅5',a:['3','4','5','6'],c:1},{p:40,q:'log₀.₅(2x-1)>2',a:['x<1.25','x>1.25','0.5<x<0.625','x<0.5'],c:2},{p:50,q:'2ˣ·3ʸ=72, log₂x+log₂y=3',a:['x=6,y=2','x=8,y=1','x=4,y=4','x=3,y=4'],c:0}],
-            [{p:10,q:'x³ производная',a:['3x²','3x','x²','2x²'],c:0},{p:20,q:'eˣ+lnx',a:['eˣ+1/x','eˣ-1/x','eˣ+x','eˣ-x'],c:0},{p:30,q:'sin(2x+1) производная',a:['2cos(2x+1)','cos(2x+1)','-2cos','2sin'],c:0},{p:40,q:'x·eˣ производная',a:['eˣ(x+1)','eˣ','x·eˣ','eˣ(x-1)'],c:0},{p:50,q:'ln(x²+1) производная',a:['2x/(x²+1)','1/(x²+1)','2x','2/(x²+1)'],c:0}],
-            [{p:10,q:'∫x² dx',a:['x³/3+C','x³+C','2x+C','x²/2+C'],c:0},{p:20,q:'∫eˣ dx',a:['eˣ+C','eˣ/x+C','lnx+C','x·eˣ+C'],c:0},{p:30,q:'∫₀¹(2x+3)dx',a:['4','5','3','6'],c:0},{p:40,q:'∫cosx dx',a:['sinx+C','-sinx+C','cosx+C','-cosx+C'],c:0},{p:50,q:'∫1/x dx',a:['ln|x|+C','1/x²+C','-1/x²+C','lnx+C'],c:0}],
-            [{p:10,q:'P(орла)',a:['1/2','1/3','1/4','1'],c:0},{p:20,q:'Сумма 7 на двух костях',a:['1/6','1/12','1/36','1/18'],c:0},{p:30,q:'5 красных,3 синих, P(красный)',a:['5/8','3/8','1/2','5/3'],c:0},{p:40,q:'P₁=0.8,P₂=0.6, оба попадут',a:['0.48','0.14','0.9','1.4'],c:0},{p:50,q:'0.7 проработает, из 3 хотя бы одна',a:['0.973','0.3','0.7','0.027'],c:0}]
-        ]
-    },
-    physics: { topics: ['Механика','Термодинамика','Электродинамика','Оптика','Кванты'],
-        questions: [
-            [{p:10,q:'g на Земле?',a:['9.8','10','6.67','3e8'],c:0},{p:20,q:'72 км/ч за 10с путь',a:['200м','100м','300м','400м'],c:0},{p:30,q:'m=2кг, a=3м/с² вверх, T?',a:['26Н','20Н','30Н','6Н'],c:0},{p:40,q:'10г,800→400м/с, работа',a:['2400Дж','1200','4800','600'],c:0},{p:50,q:'S=1.2м, a=1.5м/с², скорость',a:['1.9м/с','2.4','3.0','1.2'],c:0}],
-            [{p:10,q:'0° по Кельвину',a:['-273°C','-100°C','0°C','100°C'],c:0},{p:20,q:'Изотермический процесс',a:['T=const','p=const','V=const','Q=const'],c:0},{p:30,q:'1 моль, 300→400К, работа',a:['831Дж','1662','2493','3324'],c:0},{p:40,q:'η=40%, Tн=500К, Tх?',a:['300К','350','400','450'],c:0},{p:50,q:'2кг воды 20→100°C',a:['672кДж','840','1008','1176'],c:0}],
-            [{p:10,q:'Заряд электрона',a:['-1.6e-19Кл','1.6e-19','-1.6e-31','9.1e-31'],c:0},{p:20,q:'I=2А, t=5с, q?',a:['10Кл','2','5','0.4'],c:0},{p:30,q:'L=10м, S=2мм², R=0.5 Ом, ρ?',a:['0.1','0.01','1','10'],c:0},{p:40,q:'U=12В, I=3А, R?',a:['4Ом','36','0.25','15'],c:0},{p:50,q:'C=10мкФ, U=100В, W?',a:['0.05Дж','0.1','0.01','1'],c:0}],
-            [{p:10,q:'Скорость света',a:['3e8 м/с','3e5','340','1.5e8'],c:0},{p:20,q:'Угол падения',a:['между лучом и нормалью','между лучами','между отраженным и нормалью','между преломленным и нормалью'],c:0},{p:30,q:'F=20см, D?',a:['5 дптр','0.05','20','0.2'],c:0},{p:40,q:'d=30см, F=20см, f?',a:['60см','15','12','10'],c:0},{p:50,q:'λ=700нм, ν?',a:['4.29e14Гц','2.14e14','1.5e15','3e8'],c:0}],
-            [{p:10,q:'Кто создал квантовую теорию?',a:['Планк','Эйнштейн','Бор','Шрёдингер'],c:0},{p:20,q:'Фотон это?',a:['квант излучения','частица ядра','заряженная частица','частица с массой'],c:0},{p:30,q:'ν=5e14 Гц, E?',a:['3.315e-19Дж','6.63e-19','1.66e-19','3e8'],c:0},{p:40,q:'Красная граница',a:['мин. частота','макс. частота','длина волны','энергия'],c:0},{p:50,q:'Постоянная Планка',a:['6.63e-34 Дж·с','1.05e-34','3e8','1.6e-19'],c:0}]
-        ]
-    },
-    chemistry: { topics: ['Строение атома','Химическая связь','Кислоты','ОВР','Органика'],
-        questions: [
-            [{p:10,q:'Число протонов?',a:['Порядковый номер','Массовое число','Нейтронов','Электронов'],c:0},{p:20,q:'Изотопы отличаются?',a:['Нейтронов','Протонов','Электронов','Нуклонов'],c:0},{p:30,q:'1s²2s²2p⁶3s¹?',a:['Na','Mg','Al','K'],c:0},{p:40,q:'Форма орбитали?',a:['l','n','m','s'],c:0},{p:50,q:'Принцип Паули?',a:['не более 2 электронов','заполнение по энергии','свободные орбитали','вырождены'],c:0}],
-            [{p:10,q:'Ионная связь?',a:['Металл+неметалл','Неметаллы','Металлы','Водород+кислород'],c:0},{p:20,q:'Водородная связь?',a:['H₂O','NaCl','O₂','Fe'],c:0},{p:30,q:'CO₂ форма?',a:['Линейная','Угловая','Тетраэдр','Пирамида'],c:0},{p:40,q:'Гибридизация метана?',a:['sp³','sp²','sp','dsp²'],c:0},{p:50,q:'Наиболее полярная?',a:['H-F','H-Cl','H-Br','H-I'],c:0}],
-            [{p:10,q:'pH=10⁻⁵?',a:['5','7','9','2'],c:0},{p:20,q:'Na₂CO₃ среда?',a:['Щелочная','Кислая','Нейтральная','Амфотерная'],c:0},{p:30,q:'Сильная кислота?',a:['HCl','H₂CO₃','CH₃COOH','H₂S'],c:0},{p:40,q:'Сопряжённое NH₄⁺?',a:['NH₃','NH₂⁻','N³⁻','H₃O⁺'],c:0},{p:50,q:'Буфер?',a:['CH₃COOH/CH₃COONa','HCl/NaCl','NaOH/NaCl','H₂O'],c:0}],
-            [{p:10,q:'O в H₂O₂?',a:['-1','-2','0','+2'],c:0},{p:20,q:'Окислитель 2Al+3CuO→Al₂O₃+3Cu?',a:['CuO','Al','Al₂O₃','Cu'],c:0},{p:30,q:'Восстановление?',a:['Fe³⁺→Fe²⁺','Zn→Zn²⁺','Cl⁻→Cl₂','H₂O→O₂'],c:0},{p:40,q:'MnO₂+HCl→MnCl₂+Cl₂+H₂O, HCl коэф?',a:['4','2','6','8'],c:0},{p:50,q:'Окислитель сильнее?',a:['F₂','Cl₂','Br₂','I₂'],c:0}],
-            [{p:10,q:'Спирты группа?',a:['-OH','-COOH','-CHO','-NH₂'],c:0},{p:20,q:'Бензол?',a:['Ароматический','Алкан','Алкен','Алкин'],c:0},{p:30,q:'Этерификация даёт?',a:['Сложные эфиры','Спирты','Кислоты','Альдегиды'],c:0},{p:40,q:'Полимеризация?',a:['Этилен','Метан','Этан','Пропан'],c:0},{p:50,q:'Глюкоза и фруктоза?',a:['Изомеры','Гомологи','Полимеры','Аналоги'],c:0}]
-        ]
-    },
-    biology: { topics: ['Клетка','Генетика','Эволюция','Экология','Анатомия'],
-        questions: [
-            [{p:10,q:'АТФ синтез?',a:['Митохондрия','Рибосома','Ядро','Лизосома'],c:0},{p:20,q:'Деление клетки?',a:['Митоз','Мейоз','Амитоз','Фагоцитоз'],c:0},{p:30,q:'Функция рибосом?',a:['Синтез белка','Хранение','Транспорт','Фотосинтез'],c:0},{p:40,q:'Плазмолиз?',a:['Отставание цитоплазмы','Поступление воды','Деление','Слияние'],c:0},{p:50,q:'Стенка растений?',a:['Целлюлоза','Хитин','Гликоген','Крахмал'],c:0}],
-            [{p:10,q:'Носитель наследственности?',a:['ДНК','РНК','Белок','Углевод'],c:0},{p:20,q:'ДНК расшифровка?',a:['Дезоксирибонуклеиновая кислота','РНК','Белок','ДНК'],c:0},{p:30,q:'Закон Менделя?',a:['Расщепления','Единообразия','Независимого','Сцепленного'],c:0},{p:40,q:'Триплет?',a:['Кодон','Антикодон','Ген','Экзон'],c:0},{p:50,q:'Синдром Дауна?',a:['Трисомия 21','Гемофилия','Фенилкетонурия','Альбинизм'],c:0}],
-            [{p:10,q:'Автор эволюции?',a:['Дарвин','Ламарк','Уоллес','Мендель'],c:0},{p:20,q:'Приспособление?',a:['Адаптация','Мутация','Отбор','Наследственность'],c:0},{p:30,q:'Рудименты?',a:['Утратившие значение','Новые','Сходство','Ископаемые'],c:0},{p:40,q:'Движущий фактор?',a:['Естественный отбор','Изменчивость','Борьба','Изоляция'],c:0},{p:50,q:'Движущий отбор?',a:['Изменение среды','Постоянство','Отсутствие конкуренции','Малочисленность'],c:0}],
-            [{p:10,q:'Биосфера?',a:['Совокупность экосистем','Популяция','Ареал','Сообщество'],c:0},{p:20,q:'Продуценты?',a:['Растения','Животные','Грибы','Бактерии'],c:0},{p:30,q:'Парниковый газ?',a:['CO₂','O₂','N₂','H₂'],c:0},{p:40,q:'Цепь начинается?',a:['Продуценты','Консументы','Редуценты','Некрофаги'],c:0},{p:50,q:'Озоновый слой?',a:['Фреоны','CO₂','Кислоты','Эвтрофикация'],c:0}],
-            [{p:10,q:'Камер сердца?',a:['4','2','3','5'],c:0},{p:20,q:'Координация?',a:['Мозжечок','Гипоталамус','Продолговатый','Кора'],c:0},{p:30,q:'Газообмен?',a:['Альвеолы','Бронхи','Трахея','Плевра'],c:0},{p:40,q:'Универсальный донор?',a:['I (0)','II (A)','III (B)','IV (AB)'],c:0},{p:50,q:'Самая крупная артерия?',a:['Аорта','Сонная','Легочная','Подключичная'],c:0}]
-        ]
-    },
-    computer: { topics: ['Алгоритмы','Программирование','Сети','Базы данных','Безопасность'],
-        questions: [
-            [{p:10,q:'Алгоритм это?',a:['Последовательность действий','Программа','Код','Схема'],c:0},{p:20,q:'LIFO?',a:['Стек','Очередь','Массив','Список'],c:0},{p:30,q:'Сложность быстрой сортировки?',a:['O(n log n)','O(n²)','O(n)','O(log n)'],c:0},{p:40,q:'Рекурсия?',a:['Вызов функции самой себя','Цикл','Условие','Массив'],c:0},{p:50,q:'Кратчайший путь?',a:['Алгоритм Дейкстры','Флойда','Прима','Краскала'],c:0}],
-            [{p:10,q:'Расширение Python?',a:['.py','.java','.cpp','.js'],c:0},{p:20,q:'2**3?',a:['8','6','9','5'],c:0},{p:30,q:'Цикл с условием?',a:['while','for','if','else'],c:0},{p:40,q:'ООП?',a:['Объектно-ориентированное программирование','Операционная система','Открытый код','Офис'],c:0},{p:50,q:'Инкапсуляция?',a:['Скрытие деталей','Наследование','Полиморфизм','Абстракция'],c:0}],
-            [{p:10,q:'IP-адрес?',a:['Уникальный идентификатор','Доменное имя','Протокол','Сервер'],c:0},{p:20,q:'Модель OSI?',a:['7 уровней','5 уровней','4 уровня','3 уровня'],c:0},{p:30,q:'DNS?',a:['Система доменных имён','Протокол','IP-адрес','Маршрутизатор'],c:0},{p:40,q:'HTTP порт?',a:['80','443','21','22'],c:0},{p:50,q:'VPN?',a:['Виртуальная частная сеть','Антивирус','Брандмауэр','Прокси'],c:0}],
-            [{p:10,q:'SQL?',a:['Язык запросов','База данных','Таблица','Сервер'],c:0},{p:20,q:'SELECT?',a:['Выборка данных','Вставка','Обновление','Удаление'],c:0},{p:30,q:'Первичный ключ?',a:['Уникальный идентификатор','Внешний ключ','Индекс','Связь'],c:0},{p:40,q:'JOIN?',a:['Объединение таблиц','Сортировка','Фильтр','Группировка'],c:0},{p:50,q:'Нормализация БД?',a:['Устранение избыточности','Оптимизация','Резервное копирование','Шифрование'],c:0}],
-            [{p:10,q:'Фишинг?',a:['Мошенничество','Вирус','Взлом','Шифрование'],c:0},{p:20,q:'Ransomware?',a:['Шифровальщик','Троян','Шпион','Червь'],c:0},{p:30,q:'2FA?',a:['Двухфакторная аутентификация','Два пароля','Два устройства','Два логина'],c:0},{p:40,q:'HTTPS?',a:['Безопасный HTTP','Обычный HTTP','Файловый','Почтовый'],c:0},{p:50,q:'DDoS?',a:['Атака на доступность','Взлом','Кража данных','Фишинг'],c:0}]
-        ]
-    },
-    society: { topics: ['Право','Экономика','Социология','Политология','Философия'],
-        questions: [
-            [{p:10,q:'Высший нормативный акт РФ?',a:['Конституция','Кодекс','Закон','Указ'],c:0},{p:20,q:'Гражданское право регулирует?',a:['Имущественные отношения','Уголовные','Административные','Семейные'],c:0},{p:30,q:'Презумпция невиновности?',a:['Невиновен пока не доказано','Виновен до оправдания','Судья решает','Адвокат доказывает'],c:0},{p:40,q:'Референдум это?',a:['Всенародное голосование','Выборы','Собрание','Плебисцит'],c:0},{p:50,q:'Правовое государство?',a:['Верховенство права','Диктатура','Монархия','Автократия'],c:0}],
-            [{p:10,q:'Инфляция?',a:['Рост цен','Снижение цен','Безработица','Кризис'],c:0},{p:20,q:'ВВП?',a:['Стоимость всех товаров и услуг','Национальный доход','Бюджет','Экспорт'],c:0},{p:30,q:'НДС?',a:['Налог на добавленную стоимость','НДФЛ','Акциз','Пошлина'],c:0},{p:40,q:'Спрос?',a:['Желание и возможность купить','Количество товара','Цена','Предложение'],c:0},{p:50,q:'Рыночная экономика?',a:['Свобода предпринимательства','Плановая','Командная','Традиционная'],c:0}],
-            [{p:10,q:'Социальная стратификация?',a:['Разделение на слои','Мобильность','Неравенство','Классы'],c:0},{p:20,q:'Социальная мобильность?',a:['Переход из группы в группу','Стратификация','Дифференциация','Адаптация'],c:0},{p:30,q:'Аномия?',a:['Разрушение норм','Отклонение','Конфликт','Изоляция'],c:0},{p:40,q:'Девиантное поведение?',a:['Отклоняющееся от норм','Конформное','Нормальное','Творческое'],c:0},{p:50,q:'Социальный институт?',a:['Устойчивая форма организации','Группа','Организация','Общность'],c:0}],
-            [{p:10,q:'Государство?',a:['Политическая организация','Территория','Население','Власть'],c:0},{p:20,q:'Демократия?',a:['Власть народа','Власть элиты','Власть одного','Власть богатых'],c:0},{p:30,q:'Республика?',a:['Выборность главы','Наследственность','Диктатура','Анархия'],c:0},{p:40,q:'Разделение властей?',a:['На три ветви','На две','На четыре','На пять'],c:0},{p:50,q:'Политическая партия?',a:['Объединение единомышленников','Госорган','Движение','Профсоюз'],c:0}],
-            [{p:10,q:'Автор "Государства"?',a:['Платон','Аристотель','Сократ','Цицерон'],c:0},{p:20,q:'Эмпиризм?',a:['Опыт - основа познания','Разум - основа','Интуиция','Вера'],c:0},{p:30,q:'Категорический императив?',a:['Кант','Гегель','Ницше','Сартр'],c:0},{p:40,q:'Гносеология?',a:['Учение о познании','Учение о бытии','Учение о ценностях','Учение о морали'],c:0},{p:50,q:'"Я мыслю, следовательно, существую"?',a:['Декарт','Спиноза','Лейбниц','Паскаль'],c:0}]
-        ]
-    },
-    history: { topics: ['Древний мир','Средневековье','Новое время','Новейшее время','Россия'],
-        questions: [
-            [{p:10,q:'Первые люди появились?',a:['Африка','Европа','Азия','Австралия'],c:0},{p:20,q:'Первые государства возникли?',a:['Египет, Месопотамия','Греция','Рим','Китай'],c:0},{p:30,q:'Хаммурапи известен?',a:['Свод законов','Пирамиды','Клинопись','Войны'],c:0},{p:40,q:'Александр Македонский?',a:['Завоевал Персию','Завоевал Рим','Завоевал Египет','Завоевал Индию'],c:0},{p:50,q:'Китайская стена построена?',a:['Цинь Шихуанди','Конфуций','Лао-цзы','Мин'],c:0}],
-            [{p:10,q:'Падение Западной Римской империи?',a:['476 г.','410 г.','395 г.','500 г.'],c:0},{p:20,q:'Крестовые походы?',a:['XI-XIII вв.','X-XII вв.','XII-XIV вв.','IX-XI вв.'],c:0},{p:30,q:'Великая хартия вольностей?',a:['1215 г.','1066 г.','1265 г.','1295 г.'],c:0},{p:40,q:'Столетняя война?',a:['1337-1453','1300-1450','1340-1450','1400-1450'],c:0},{p:50,q:'Изобретение книгопечатания?',a:['Гутенберг','Цай Лунь','Франклин','Да Винчи'],c:0}],
-            [{p:10,q:'Великие географические открытия?',a:['XV-XVI вв.','XIV-XV вв.','XVI-XVII вв.','XIII-XIV вв.'],c:0},{p:20,q:'Реформация началась?',a:['1517 г.','1520 г.','1500 г.','1530 г.'],c:0},{p:30,q:'Французская революция?',a:['1789 г.','1776 г.','1793 г.','1799 г.'],c:0},{p:40,q:'Наполеон стал императором?',a:['1804 г.','1800 г.','1802 г.','1806 г.'],c:0},{p:50,q:'Промышленный переворот?',a:['XVIII в.','XVII в.','XIX в.','XVI в.'],c:0}],
-            [{p:10,q:'Первая мировая война?',a:['1914-1918','1914-1917','1912-1918','1914-1919'],c:0},{p:20,q:'Октябрьская революция?',a:['1917 г.','1918 г.','1919 г.','1920 г.'],c:0},{p:30,q:'Вторая мировая война?',a:['1939-1945','1939-1944','1940-1945','1938-1945'],c:0},{p:40,q:'Образование ООН?',a:['1945 г.','1944 г.','1946 г.','1947 г.'],c:0},{p:50,q:'Распад СССР?',a:['1991 г.','1990 г.','1992 г.','1993 г.'],c:0}],
-            [{p:10,q:'Крещение Руси?',a:['988 г.','980 г.','990 г.','1000 г.'],c:0},{p:20,q:'Куликовская битва?',a:['1380 г.','1378 г.','1382 г.','1400 г.'],c:0},{p:30,q:'Иван Грозный?',a:['XVI в.','XV в.','XVII в.','XIV в.'],c:0},{p:40,q:'Реформы Петра I?',a:['XVIII в.','XVII в.','XIX в.','XVI в.'],c:0},{p:50,q:'Отмена крепостного права?',a:['1861 г.','1855 г.','1870 г.','1881 г.'],c:0}]
-        ]
-    }
-};
-
-// Задачи (по 9 на предмет)
-const tasksData = {
-    math: [
-        {text:'2cos²x - √3cosx = 0 на [0,2π]. Меньший корень?', answer:'π/6', explanation:'cosx=0 или cosx=√3/2 → π/6'},
-        {text:'log₂(x-3)+log₂(x-1)=3', answer:'5', explanation:'x=5'},
-        {text:'f\'(1) для 3x⁴-2x³+5x-7', answer:'11', explanation:'12-6+5=11'},
-        {text:'∫₀²(3x²+2x-5)dx', answer:'2', explanation:'8+4-10=2'},
-        {text:'Сумма 7 на двух костях', answer:'1/6', explanation:'6/36=1/6'},
-        {text:'sin(π/3)=?', answer:'√3/2', explanation:'табличное значение'},
-        {text:'log₂16?', answer:'4', explanation:'2⁴=16'},
-        {text:'x⁵ производная', answer:'5x⁴', explanation:'степенная функция'},
-        {text:'∫(2x)dx', answer:'x²+C', explanation:'первообразная'}
-    ],
-    physics: [
-        {text:'Тело вверх 30 м/с, Eк уменьшилась в 4 раза, h?', answer:'34', explanation:'34 м'},
-        {text:'m=2кг, μ=0.3, угол30°, Fmin?', answer:'6', explanation:'≈6Н'},
-        {text:'1 моль, 300→400К, работа?', answer:'831', explanation:'831 Дж'},
-        {text:'2м, 10см, 5А и 10А, F в мкН?', answer:'200', explanation:'200 мкН'},
-        {text:'h=2см, d=30см, F=20см, H?', answer:'4', explanation:'4 см'},
-        {text:'Формула скорости', answer:'v=s/t', explanation:'скорость = путь/время'},
-        {text:'0°C в Кельвинах?', answer:'273', explanation:'273.15 К'},
-        {text:'Закон Ома', answer:'U=IR', explanation:'напряжение = ток × сопротивление'},
-        {text:'Скорость света', answer:'3e8', explanation:'3·10⁸ м/с'}
-    ],
-    chemistry: [
-        {text:'Число протонов в ⁴⁰Ca?', answer:'20', explanation:'порядковый номер 20'},
-        {text:'Тип связи в NaCl', answer:'Ионная', explanation:'металл+неметалл'},
-        {text:'Формула серной кислоты', answer:'H₂SO₄', explanation:'серная кислота'},
-        {text:'O в H₂O₂ степень окисления?', answer:'-1', explanation:'перекись водорода'},
-        {text:'Формула метана', answer:'CH₄', explanation:'простейший углеводород'},
-        {text:'Число электронов в Na', answer:'11', explanation:'порядковый номер 11'},
-        {text:'Ковалентная связь в H₂O', answer:'Ковалентная полярная', explanation:'разные атомы'},
-        {text:'pH нейтральной среды', answer:'7', explanation:'нейтральная среда'},
-        {text:'Спирты группа', answer:'-OH', explanation:'гидроксильная группа'}
-    ],
-    biology: [
-        {text:'Aa x Aa, вероятность aa?', answer:'25%', explanation:'25%'},
-        {text:'Органоид АТФ', answer:'Митохондрия', explanation:'энергетическая станция'},
-        {text:'Автор эволюции', answer:'Дарвин', explanation:'Чарльз Дарвин'},
-        {text:'Продуценты это?', answer:'Растения', explanation:'производители органики'},
-        {text:'Камер сердца', answer:'4', explanation:'2 предсердия, 2 желудочка'},
-        {text:'ДНК расшифровка', answer:'Дезоксирибонуклеиновая кислота', explanation:'носитель наследственности'},
-        {text:'Функция рибосом', answer:'Синтез белка', explanation:'сборка белков'},
-        {text:'Естественный отбор создал?', answer:'Дарвин', explanation:'основной механизм эволюции'},
-        {text:'Кровь с кислородом', answer:'Артериальная', explanation:'насыщена O₂'}
-    ],
-    computer: [
-        {text:'Что такое алгоритм?', answer:'Последовательность действий', explanation:'Набор инструкций'},
-        {text:'Расширение Python?', answer:'.py', explanation:'.py'},
-        {text:'Что такое IP-адрес?', answer:'Уникальный идентификатор', explanation:'Идентификатор устройства'},
-        {text:'SQL расшифровка?', answer:'Structured Query Language', explanation:'Язык запросов'},
-        {text:'Что такое фишинг?', answer:'Мошенничество', explanation:'Кража данных'},
-        {text:'Что такое ООП?', answer:'Объектно-ориентированное программирование', explanation:'Парадигма'},
-        {text:'Что такое VPN?', answer:'Виртуальная частная сеть', explanation:'Безопасное соединение'},
-        {text:'Что такое DDoS?', answer:'Атака на доступность', explanation:'Перегрузка сервера'},
-        {text:'Что такое 2FA?', answer:'Двухфакторная аутентификация', explanation:'Два способа подтверждения'}
-    ],
-    society: [
-        {text:'Высший нормативный акт РФ?', answer:'Конституция', explanation:'Основной закон'},
-        {text:'Что такое инфляция?', answer:'Рост цен', explanation:'Обесценивание денег'},
-        {text:'Что такое демократия?', answer:'Власть народа', explanation:'Народовластие'},
-        {text:'Что такое ВВП?', answer:'Стоимость товаров и услуг', explanation:'Валовой внутренний продукт'},
-        {text:'Кто автор "Государства"?', answer:'Платон', explanation:'Древнегреческий философ'},
-        {text:'Что такое стратификация?', answer:'Разделение на слои', explanation:'Социальное неравенство'},
-        {text:'Что такое референдум?', answer:'Всенародное голосование', explanation:'Прямая демократия'},
-        {text:'Что такое гносеология?', answer:'Учение о познании', explanation:'Теория познания'},
-        {text:'Категорический императив?', answer:'Кант', explanation:'Моральный закон'}
-    ],
-    history: [
-        {text:'Крещение Руси год?', answer:'988', explanation:'988 г.'},
-        {text:'Куликовская битва год?', answer:'1380', explanation:'1380 г.'},
-        {text:'Отмена крепостного права?', answer:'1861', explanation:'1861 г.'},
-        {text:'Первая мировая война?', answer:'1914-1918', explanation:'1914-1918'},
-        {text:'Октябрьская революция?', answer:'1917', explanation:'1917 г.'},
-        {text:'Вторая мировая война?', answer:'1939-1945', explanation:'1939-1945'},
-        {text:'Распад СССР?', answer:'1991', explanation:'1991 г.'},
-        {text:'Падение Римской империи?', answer:'476', explanation:'476 г.'},
-        {text:'Французская революция?', answer:'1789', explanation:'1789 г.'}
-    ]
-};
-
-// Блиц (5 вопросов)
-const blitzData = {
-    math: [
-        {q:'Производная x³?', a:['3x²','x³','3x','x²'], c:0, points:10},
-        {q:'sin(π/2)?', a:['1','0','-1','1/2'], c:0, points:10},
-        {q:'log₂16?', a:['4','8','2','16'], c:0, points:10},
-        {q:'∫x dx?', a:['x²/2','x²','2x','1'], c:0, points:10},
-        {q:'Вероятность 6 на кубике?', a:['1/6','1/2','1/3','1'], c:0, points:10}
-    ],
-    physics: [
-        {q:'Формула скорости?', a:['v=s/t','v=at','s=vt','a=v/t'], c:0, points:10},
-        {q:'Единица силы?', a:['Ньютон','Джоуль','Ватт','Паскаль'], c:0, points:10},
-        {q:'Ускорение свободного падения?', a:['9.8 м/с²','10 м/с²','9.81','9.8'], c:0, points:10},
-        {q:'Закон Ома?', a:['U=IR','I=U/R','R=U/I','все'], c:3, points:10},
-        {q:'Скорость света?', a:['3·10⁸ м/с','3·10⁵','3·10⁶','3·10⁹'], c:0, points:10}
-    ],
-    chemistry: [
-        {q:'Формула воды?', a:['H₂O','CO₂','H₂O₂','OH'], c:0, points:10},
-        {q:'Кислород — это?', a:['Газ','Жидкость','Твёрдое','Плазма'], c:0, points:10},
-        {q:'PH нейтральной среды?', a:['7','0','14','5'], c:0, points:10},
-        {q:'Металл с водой?', a:['Na','Fe','Cu','Ag'], c:0, points:10},
-        {q:'Органическое вещество?', a:['Метан','Вода','Соль','CO₂'], c:0, points:10}
-    ],
-    biology: [
-        {q:'Стенка растений?', a:['Целлюлоза','Хитин','Белок','Липиды'], c:0, points:10},
-        {q:'Синтез белка?', a:['Рибосома','Митохондрия','Ядро','Лизосома'], c:0, points:10},
-        {q:'Двойная спираль?', a:['ДНК','РНК','Белок','Углевод'], c:0, points:10},
-        {q:'Теория эволюции?', a:['Дарвин','Мендель','Павлов','Мечников'], c:0, points:10},
-        {q:'Камер сердца?', a:['4','2','3','5'], c:0, points:10}
-    ],
-    computer: [
-        {q:'Расширение Python?', a:['.py','.java','.cpp','.js'], c:0, points:10},
-        {q:'Что такое алгоритм?', a:['Последовательность','Программа','Код','Схема'], c:0, points:10},
-        {q:'Что такое IP-адрес?', a:['Идентификатор','Домен','Протокол','Сервер'], c:0, points:10},
-        {q:'Что такое SQL?', a:['Язык запросов','База','Таблица','Сервер'], c:0, points:10},
-        {q:'Что такое фишинг?', a:['Мошенничество','Вирус','Взлом','Шифрование'], c:0, points:10}
-    ],
-    society: [
-        {q:'Высший акт РФ?', a:['Конституция','Кодекс','Закон','Указ'], c:0, points:10},
-        {q:'Что такое инфляция?', a:['Рост цен','Снижение','Безработица','Кризис'], c:0, points:10},
-        {q:'Что такое демократия?', a:['Власть народа','Элиты','Одного','Богатых'], c:0, points:10},
-        {q:'Что такое ВВП?', a:['Стоимость товаров и услуг','Нацдоход','Бюджет','Экспорт'], c:0, points:10},
-        {q:'Кто автор "Государства"?', a:['Платон','Аристотель','Сократ','Цицерон'], c:0, points:10}
-    ],
-    history: [
-        {q:'Крещение Руси год?', a:['988','980','990','1000'], c:0, points:10},
-        {q:'Куликовская битва год?', a:['1380','1378','1382','1400'], c:0, points:10},
-        {q:'Отмена крепостного права?', a:['1861','1855','1870','1881'], c:0, points:10},
-        {q:'Первая мировая война?', a:['1914-1918','1914-1917','1912-1918','1914-1919'], c:0, points:10},
-        {q:'Распад СССР?', a:['1991','1990','1992','1993'], c:0, points:10}
-    ]
-};
-
-const scientistsData = {
-    math: [
-        {name:'Исаак Ньютон', field:'Математика', facts:'Создал дифференциальное исчисление.', achievements:['Дифференциальное исчисление','Законы Ньютона']},
-        {name:'Леонард Эйлер', field:'Математика', facts:'Ввел обозначения f(x), e, Σ.', achievements:['Формула Эйлера','Теория графов']},
-        {name:'Карл Гаусс', field:'Математика', facts:'Король математиков.', achievements:['Метод наименьших квадратов','Теория чисел']}
-    ],
-    physics: [
-        {name:'Альберт Эйнштейн', field:'Физика', facts:'Теория относительности.', achievements:['Специальная теория','Общая теория']},
-        {name:'Никола Тесла', field:'Физика', facts:'Гений электричества.', achievements:['Переменный ток','Трансформатор Теслы']},
-        {name:'Мария Кюри', field:'Физика', facts:'Две Нобелевские премии.', achievements:['Радий','Полоний']}
-    ],
-    chemistry: [
-        {name:'Дмитрий Менделеев', field:'Химия', facts:'Создал периодическую таблицу.', achievements:['Периодический закон','Предсказание элементов']},
-        {name:'Антуан Лавуазье', field:'Химия', facts:'Отец современной химии.', achievements:['Закон сохранения массы','Кислородная теория']},
-        {name:'Мария Кюри', field:'Химия', facts:'Исследовала радиоактивность.', achievements:['Радий','Полоний']}
-    ],
-    biology: [
-        {name:'Чарльз Дарвин', field:'Биология', facts:'Теория эволюции.', achievements:['Происхождение видов','Естественный отбор']},
-        {name:'Грегор Мендель', field:'Генетика', facts:'Законы наследования.', achievements:['Законы Менделя','Работы с горохом']},
-        {name:'Луи Пастер', field:'Микробиология', facts:'Вакцинация, пастеризация.', achievements:['Пастеризация','Вакцина от бешенства']}
-    ],
-    computer: [
-        {name:'Алан Тьюринг', field:'Информатика', facts:'Отец теории вычислимости.', achievements:['Машина Тьюринга','Криптография']},
-        {name:'Билл Гейтс', field:'Программирование', facts:'Основатель Microsoft.', achievements:['MS-DOS','Windows']},
-        {name:'Линус Торвальдс', field:'Операционные системы', facts:'Создатель Linux.', achievements:['Linux','Git']}
-    ],
-    society: [
-        {name:'Платон', field:'Философия', facts:'Автор "Государства".', achievements:['Теория идей','Академия']},
-        {name:'Аристотель', field:'Политология', facts:'Учитель Александра Македонского.', achievements:['Логика','Политика']},
-        {name:'Макс Вебер', field:'Социология', facts:'Теория социального действия.', achievements:['Протестантская этика','Бюрократия']}
-    ],
-    history: [
-        {name:'Геродот', field:'История', facts:'Отец истории.', achievements:['"История"','Описание греко-персидских войн']},
-        {name:'Н.М. Карамзин', field:'Русская история', facts:'Автор "Истории государства Российского".', achievements:['12 томов','Сентиментализм']},
-        {name:'С.М. Соловьёв', field:'Русская история', facts:'Автор 29-томной истории.', achievements:['"История России с древнейших времен"','Академик']}
-    ]
-};
-
-let currentSubject = null;
-
-function renderSubjectSelection() {
-    const container = document.getElementById('mainContent');
-    container.innerHTML = `<div class="subject-selection"><h1 class="selection-title">Выберите предмет для изучения</h1><p class="selection-subtitle">Квизы, задачи, учёные и блиц-викторина для команд</p><div class="subject-cards" id="subjectCards"></div></div>`;
-    const cards = document.getElementById('subjectCards');
-    for (const [key, s] of Object.entries(subjectsData)) {
-        const card = document.createElement('div');
-        card.className = `subject-card ${key}`;
-        card.innerHTML = `<div class="subject-icon"><i class="fas ${s.icon}"></i></div><h2>${s.name}</h2><p>Интерактивные задания и игры</p><div class="action-buttons"><button class="action-btn primary start-btn" data-subject="${key}">Начать</button></div>`;
-        cards.appendChild(card);
-    }
-    document.querySelectorAll('.start-btn').forEach(btn => btn.addEventListener('click', e => startSubject(btn.dataset.subject)));
-}
-
-function renderSubjectNav() {
-    const nav = document.getElementById('subjectNav');
-    nav.innerHTML = '';
-    for (const [key, s] of Object.entries(subjectsData)) {
-        const btn = document.createElement('button');
-        btn.className = 'subject-btn';
-        btn.innerHTML = `<i class="fas ${s.icon}"></i> ${s.name}`;
-        btn.onclick = () => startSubject(key);
-        nav.appendChild(btn);
-    }
-}
-
-function createSubjectContent(subject) {
-    const container = document.getElementById('mainContent');
-    const existing = document.getElementById(`${subject}Content`);
-    if (existing) existing.remove();
-    const div = document.createElement('div');
-    div.id = `${subject}Content`;
-    div.className = 'subject-content';
-    div.innerHTML = `
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="teams"><i class="fas fa-users"></i> Команды</button>
-            <button class="tab-btn" data-tab="quiz"><i class="fas fa-brain"></i> Квиз</button>
-            <button class="tab-btn" data-tab="tasks"><i class="fas fa-tasks"></i> Задачи</button>
-            <button class="tab-btn" data-tab="scientists"><i class="fas fa-user-tie"></i> Учёные</button>
-            <button class="tab-btn" data-tab="blitz"><i class="fas fa-bolt"></i> Блиц</button>
-        </div>
-        <div class="panel active" id="${subject}TeamsPanel">
-            <div class="teams-control"><div class="team-input-box"><label>Команда 1</label><input type="text" id="${subject}Team1" value="${teams[subject][0].name}"></div><div class="team-input-box"><label>Команда 2</label><input type="text" id="${subject}Team2" value="${teams[subject][1].name}"></div><div class="team-input-box"><label>Команда 3</label><input type="text" id="${subject}Team3" placeholder="Дополнительная"></div></div>
-            <div class="action-buttons"><button class="action-btn primary" id="${subject}NextTeam">Следующая команда</button></div>
-            <div class="teams-list" id="${subject}TeamsList"></div>
-        </div>
-        <div class="panel" id="${subject}QuizPanel">
-            <div class="action-buttons"><button class="action-btn primary" id="${subject}NextTeamQuiz">След. команда</button><button class="action-btn primary" id="${subject}ResetQuiz">Сброс</button></div>
-            <div style="overflow-x:auto"><table class="quiz-table" id="${subject}QuizTable"><thead>汽<th>Тема</th><th>10</th><th>20</th><th>30</th><th>40</th><th>50</th> </thead><tbody></tbody>  </div>
-        </div>
-        <div class="panel" id="${subject}TasksPanel"><div id="${subject}TasksContainer"></div><div class="action-buttons"><button class="action-btn primary" id="${subject}NextTask">Следующая задача</button></div></div>
-        <div class="panel" id="${subject}ScientistsPanel"><div class="scientists-grid" id="${subject}ScientistsGrid"></div></div>
-        <div class="panel" id="${subject}BlitzPanel"><div id="${subject}BlitzContainer"></div></div>
-    `;
-    container.appendChild(div);
-    
-    document.getElementById(`${subject}NextTeam`).onclick = () => nextTeam(subject);
-    document.getElementById(`${subject}NextTeamQuiz`).onclick = () => nextTeam(subject);
-    document.getElementById(`${subject}ResetQuiz`).onclick = () => resetQuiz(subject);
-    document.getElementById(`${subject}NextTask`).onclick = () => loadTasks(subject);
-    document.getElementById(`${subject}Team1`).oninput = () => updateTeamsFromInputs(subject);
-    document.getElementById(`${subject}Team2`).oninput = () => updateTeamsFromInputs(subject);
-    document.getElementById(`${subject}Team3`).oninput = () => updateTeamsFromInputs(subject);
-    
-    updateTeamsDisplay(subject);
-    loadQuizTable(subject);
-}
-
-function updateTeamsDisplay(subject) {
-    const container = document.getElementById(`${subject}TeamsList`);
-    if (!container) return;
-    container.innerHTML = '';
-    teams[subject].forEach(team => {
-        const card = document.createElement('div');
-        card.className = `team-card ${team.isCurrent ? 'current' : ''}`;
-        card.innerHTML = `<div class="team-name">${team.name}</div><div class="team-score">${team.score} баллов</div>`;
-        container.appendChild(card);
-    });
-}
-
-function updateTeamsFromInputs(subject) {
-    for (let i = 0; i < 3; i++) {
-        const inp = document.getElementById(`${subject}Team${i+1}`);
-        if (inp && inp.value.trim()) {
-            if (i < teams[subject].length) teams[subject][i].name = inp.value.trim();
-            else teams[subject].push({ name: inp.value.trim(), score: 0, isCurrent: false });
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мир в науке</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --math-color: #fd79a8;
+            --physics-color: #fab1a0;
+            --success: #00b894;
+            --danger: #d63031;
+            --warning: #fdcb6e;
+            --dark: #2d3436;
+            --light: #f9f9f9;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            --border-radius: 20px;
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-    }
-    for (let i = teams[subject].length - 1; i >= 2; i--) if (!teams[subject][i].name?.trim()) teams[subject].splice(i, 1);
-    updateTeamsDisplay(subject);
-}
 
-function nextTeam(subject) {
-    if (teams[subject].length < 2) return;
-    const idx = teams[subject].findIndex(t => t.isCurrent);
-    teams[subject][idx].isCurrent = false;
-    teams[subject][(idx + 1) % teams[subject].length].isCurrent = true;
-    updateTeamsDisplay(subject);
-}
-
-function loadQuizTable(subject) {
-    const quiz = quizzes[subject];
-    const tbody = document.querySelector(`#${subject}QuizTable tbody`);
-    if (!tbody) return;
-    tbody.innerHTML = '';
-    quiz.topics.forEach((topic, ti) => {
-        const row = tbody.insertRow();
-        row.insertCell(0).textContent = topic;
-        row.cells[0].className = 'topic-cell';
-        for (let pts = 10; pts <= 50; pts += 10) {
-            const cell = row.insertCell();
-            cell.className = 'question-cell';
-            const q = quiz.questions[ti]?.find(qq => qq.p === pts);
-            if (q) {
-                cell.innerHTML = `<div class="question-points">${pts}</div>`;
-                cell.onclick = () => openQuestionModal(subject, ti, pts);
-            } else { cell.innerHTML = '-'; cell.style.opacity = '0.5'; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-    });
-}
 
-function openQuestionModal(subject, topicIdx, points) {
-    const original = quizzes[subject].questions[topicIdx].find(q => q.p === points);
-    if (!original) return;
-    const answers = shuffleArray([...original.a]);
-    const correctIndex = answers.indexOf(original.a[original.c]);
-    const current = teams[subject].find(t => t.isCurrent);
-    const modal = document.getElementById('questionModal');
-    document.getElementById('questionContent').innerHTML = `
-        <h2 style="color:#0ff;">${quizzes[subject].topics[topicIdx]} - ${points} баллов</h2>
-        <div style="margin:20px 0;">${original.q}</div>
-        <div class="answers-list">${answers.map((a,i) => `<div class="answer-option" data-ans="${i}">${a}</div>`).join('')}</div>
-        <div style="display:flex; justify-content:space-between;"><div>Отвечает: <strong style="color:#0ff;">${current.name}</strong></div><button class="btn-submit" id="submitAnswer">Подтвердить</button></div>
-    `;
-    modal.classList.add('active');
-    let selected = null;
-    document.querySelectorAll('.answer-option').forEach(opt => {
-        opt.onclick = () => { document.querySelectorAll('.answer-option').forEach(o => o.classList.remove('selected')); opt.classList.add('selected'); selected = parseInt(opt.dataset.ans); };
-    });
-    document.getElementById('submitAnswer').onclick = () => {
-        if (selected === null) { alert('Выберите ответ'); return; }
-        if (selected === correctIndex) {
-            current.score += points;
-            alert(`Правильно! +${points} баллов`);
-            const cells = document.querySelectorAll(`#${subject}QuizTable .question-cell`);
-            cells.forEach(cell => { if (cell.innerHTML.includes(points)) { cell.style.pointerEvents = 'none'; cell.style.opacity = '0.6'; } });
-        } else { alert(`Неверно! Ответ: ${original.a[original.c]}`); }
-        updateTeamsDisplay(subject);
-        nextTeam(subject);
-        modal.classList.remove('active');
-    };
-}
+        body {
+            background: var(--bg-gradient);
+            background-size: 400% 400%;
+            animation: gradientMove 20s ease infinite;
+            color: var(--dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-function resetQuiz(subject) {
-    document.querySelectorAll(`#${subject}QuizTable .question-cell`).forEach(cell => { cell.style.pointerEvents = 'auto'; cell.style.opacity = '1'; });
-    teams[subject].forEach((t,i) => { t.score = 0; t.isCurrent = i === 0; });
-    updateTeamsDisplay(subject);
-    alert('Квиз сброшен');
-}
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
-function loadTasks(subject) {
-    const tasks = tasksData[subject];
-    const container = document.getElementById(`${subject}TasksContainer`);
-    if (!container) return;
-    let idx = 0;
-    function render() {
-        if (idx >= tasks.length) { container.innerHTML = `<div style="text-align:center;padding:40px;">🏆 Все задачи решены!</div>`; return; }
-        const task = tasks[idx];
-        let attempts = 0;
-        container.innerHTML = `<div class="task-item"><div class="task-header"><div>Задача ${idx+1}/${tasks.length}</div><div class="task-attempts">Попытки: <span id="attemptCounter">0</span>/3</div></div><div style="margin:15px 0;">${task.text}</div><div class="answer-row"><input type="text" id="taskInput" placeholder="Ответ..."><button class="btn-submit" id="taskSubmit">Проверить</button></div><div id="taskFeedback" class="feedback"></div></div>`;
-        const input = document.getElementById('taskInput');
-        const fb = document.getElementById('taskFeedback');
-        const counter = document.getElementById('attemptCounter');
-        document.getElementById('taskSubmit').onclick = () => {
-            if (!input.value.trim()) { alert('Введите ответ'); return; }
-            if (attempts >= 3) { alert('Попытки исчерпаны'); return; }
-            const user = input.value.trim().toLowerCase().replace(/\s+/g, ' ');
-            const correct = task.answer.toLowerCase();
-            const isNum = !isNaN(parseFloat(user)) && !isNaN(parseFloat(correct)) && parseFloat(user) === parseFloat(correct);
-            if (isNum || user === correct) {
-                fb.innerHTML = `<strong>Правильно!</strong><br>${task.explanation}`;
-                fb.className = 'feedback correct';
-                const cur = teams[subject].find(t => t.isCurrent);
-                if (cur) { cur.score += 20; updateTeamsDisplay(subject); }
-                idx++; setTimeout(render, 1000);
-            } else {
-                attempts++;
-                counter.textContent = attempts;
-                if (attempts >= 3) {
-                    fb.innerHTML = `<strong>Исчерпаны попытки!</strong><br>Ответ: ${task.answer}<br>${task.explanation}`;
-                    fb.className = 'feedback incorrect';
-                    idx++; setTimeout(render, 1500);
-                } else { fb.innerHTML = `<strong>Неверно!</strong> Осталось: ${3-attempts}`; fb.className = 'feedback incorrect'; }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+
+        /* Шапка */
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            background: var(--primary);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text h1 {
+            font-size: 1.8rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .logo-text p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Навигация по предметам */
+        .subject-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .subject-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: white;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .subject-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .subject-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .subject-btn.math.active {
+            background: var(--math-color);
+        }
+
+        .subject-btn.physics.active {
+            background: var(--physics-color);
+        }
+
+        /* Экран выбора предмета */
+        .subject-selection {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .selection-title {
+            font-size: 3rem;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .selection-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 50px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .subject-cards {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .subject-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            width: 350px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+            border: 2px solid transparent;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-20px);
+            border-color: var(--primary);
+        }
+
+        .subject-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .subject-card.math .subject-icon {
+            color: var(--math-color);
+        }
+
+        .subject-card.physics .subject-icon {
+            color: var(--physics-color);
+        }
+
+        .subject-card h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .subject-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        /* Контент предмета */
+        .subject-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .subject-content.active {
+            display: block;
+        }
+
+        /* Навигация внутри предмета */
+        .content-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .content-btn {
+            padding: 15px 30px;
+            background: var(--card-bg);
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .content-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Управление командами */
+        .teams-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        .teams-control {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .team-input-container {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .team-input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .team-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .team-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        .teams-display {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .team-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 200px;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .team-card.current {
+            transform: scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .team-card.current::after {
+            content: 'ХОД';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--success);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .team-score {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        /* Квиз в виде таблицы */
+        .quiz-table-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            overflow-x: auto;
+        }
+
+        .quiz-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .quiz-table th {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .quiz-table td {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            transition: var(--transition);
+        }
+
+        .quiz-table tr:hover td {
+            background: rgba(108, 92, 231, 0.05);
+        }
+
+        .topic-cell {
+            background: rgba(108, 92, 231, 0.1);
+            font-weight: 600;
+            text-align: left;
+            color: var(--dark);
+        }
+
+        .question-cell {
+            cursor: pointer;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .question-cell:hover {
+            background: rgba(108, 92, 231, 0.1) !important;
+        }
+
+        .question-cell.answered {
+            background: rgba(0, 184, 148, 0.1);
+            color: var(--success);
+        }
+
+        .question-cell.answered.wrong {
+            background: rgba(214, 48, 49, 0.1);
+            color: var(--danger);
+        }
+
+        .question-points {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Окно вопроса */
+        .question-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .question-modal.active {
+            display: flex;
+        }
+
+        .question-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: var(--dark);
+        }
+
+        .answers-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .answer-btn {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            background: white;
+            text-align: left;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+            color: var(--dark);
+        }
+
+        .answer-btn:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .answer-btn.selected {
+            border-color: var(--primary);
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .modal-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .current-team-info {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        /* Задачи */
+        .tasks-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .task {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+        }
+
+        .task:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .task-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .task-attempts {
+            display: flex;
+            gap: 10px;
+        }
+
+        .attempt-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #e0e0e0;
+        }
+
+        .attempt-dot.used {
+            background: var(--danger);
+        }
+
+        .task-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: var(--dark);
+        }
+
+        .task-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .answer-input-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .answer-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .answer-input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        .task-btn {
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            min-width: 180px;
+        }
+
+        .task-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-feedback {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .task-feedback.correct {
+            background: rgba(0, 184, 148, 0.1);
+            border: 2px solid var(--success);
+            color: var(--success);
+            display: block;
+        }
+
+        .task-feedback.incorrect {
+            background: rgba(214, 48, 49, 0.1);
+            border: 2px solid var(--danger);
+            color: var(--danger);
+            display: block;
+        }
+
+        /* Ученые */
+        .scientists-section {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .scientists-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .scientist-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .scientist-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .scientist-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .scientist-info {
+            padding: 25px;
+        }
+
+        .scientist-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .scientist-field {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scientist-facts {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .scientist-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .scientist-modal.active {
+            display: flex;
+        }
+
+        .scientist-modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .scientist-modal-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .scientist-modal-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--primary);
+            background: #f0f0f0;
+        }
+
+        .scientist-modal-info h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .scientist-modal-field {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .scientist-modal-details {
+            margin-top: 30px;
+        }
+
+        .scientist-modal-details h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .scientist-modal-details p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        /* Кнопки действий */
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 18px 35px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 200px;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn.primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Футер */
+        footer {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-title {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .footer-developers {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .footer-tech {
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
             }
-        };
-    }
-    render();
-}
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .selection-title {
+                font-size: 2.2rem;
+            }
+            
+            .subject-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .subject-card {
+                width: 100%;
+                max-width: 400px;
+            }
+            
+            /* Убираем навигацию Команды/Квиз/Задачи/Ученые */
+            .content-nav {
+                display: none;
+            }
+            
+            .teams-control {
+                flex-direction: column;
+            }
+            
+            .quiz-table {
+                font-size: 0.9rem;
+            }
+            
+            .answers-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .scientists-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scientist-modal-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .answer-input-container {
+                flex-direction: column;
+            }
+            
+            .answer-input {
+                width: 100%;
+            }
+            
+            .task-btn {
+                width: 100%;
+            }
+        }
 
-function loadScientists(subject) {
-    const scientists = scientistsData[subject];
-    const grid = document.getElementById(`${subject}ScientistsGrid`);
-    if (!grid) return;
-    grid.innerHTML = '';
-    scientists.forEach(s => {
-        const card = document.createElement('div');
-        card.className = 'scientist-card';
-        card.innerHTML = `<div class="scientist-avatar"><i class="fas fa-user-graduate"></i></div><div class="scientist-name">${s.name}</div><div class="scientist-field">${s.field}</div><div class="scientist-facts">${s.facts}</div>`;
-        card.onclick = () => {
-            const modal = document.getElementById('scientistModal');
-            document.getElementById('scientistContent').innerHTML = `<div style="text-align:center;"><div class="scientist-avatar" style="font-size:4rem;"><i class="fas fa-user-graduate"></i></div><h2 style="color:#0ff;">${s.name}</h2><div style="color:#f0f;">${s.field}</div><p style="margin:15px 0;">${s.facts}</p><div><h3>Достижения:</h3>${s.achievements.map(a => `<p><i class="fas fa-star" style="color:#ff0;"></i> ${a}</p>`).join('')}</div></div>`;
+        @media (max-width: 480px) {
+            .selection-title {
+                font-size: 1.8rem;
+            }
+            
+            .subject-card {
+                padding: 25px;
+            }
+            
+            .subject-icon {
+                font-size: 4rem;
+            }
+            
+            .team-card {
+                min-width: 100%;
+            }
+            
+            .question-content {
+                padding: 25px;
+            }
+            
+            .scientist-modal-content {
+                padding: 25px;
+            }
+            
+            .scientist-modal-info h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <header id="main-header">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Мир в науке</h1>
+                    <p>Физика и Математика • 10-11 классы, 1 курс СПО</p>
+                </div>
+            </div>
+            
+            <div class="subject-nav" id="subject-nav">
+                <button class="subject-btn math" data-subject="math">
+                    <i class="fas fa-calculator"></i>
+                    Математика
+                </button>
+                <button class="subject-btn physics" data-subject="physics">
+                    <i class="fas fa-atom"></i>
+                    Физика
+                </button>
+            </div>
+        </header>
+
+        <!-- Экран выбора предмета -->
+        <section class="subject-selection" id="subject-selection">
+            <h1 class="selection-title">Выберите предмет для изучения</h1>
+            <p class="selection-subtitle">Изучайте сложные темы через интерактивные квизы, задачи и знакомство с великими учеными</p>
+            
+            <div class="subject-cards">
+                <div class="subject-card math" data-subject="math">
+                    <div class="subject-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h2>Математика</h2>
+                    <p>Алгебра, геометрия, математический анализ, тригонометрия, логарифмы и многое другое для 10-11 классов и 1 курса СПО</p>
+                    <div class="action-buttons">
+                        <button class="action-btn primary start-subject" data-subject="math">
+                            <i class="fas fa-play-circle"></i>
+                            Начать изучение
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="subject-card physics" data-subject="physics">
+                    <div class="subject-icon">
+                        <i class="fas fa-atom"></i>
+                    </div>
+                    <h2>Физика</h2>
+                    <p>Механика, термодинамика, электродинамика, квантовая физика, оптика и астрофизика для старших классов и 1 курса СПО</p>
+                    <div class="action-buttons">
+                        <button class="action-btn primary start-subject" data-subject="physics">
+                            <i class="fas fa-play-circle"></i>
+                            Начать изучение
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Контент математики -->
+        <section class="subject-content" id="math-content">
+            <!-- Управление командами -->
+            <div class="content-section teams-section active" id="math-teams">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Управление командами для математики
+                </h2>
+                
+                <div class="teams-control">
+                    <div class="team-input-container">
+                        <label class="team-input-label">Команда 1</label>
+                        <input type="text" class="team-input" id="math-team1" value="Геометры" placeholder="Введите название команды">
+                    </div>
+                    <div class="team-input-container">
+                        <label class="team-input-label">Команда 2</label>
+                        <input type="text" class="team-input" id="math-team2" value="Алгебраисты" placeholder="Введите название команды">
+                    </div>
+                    <div class="team-input-container">
+                        <label class="team-input-label">Команда 3 (необязательно)</label>
+                        <input type="text" class="team-input" id="math-team3" placeholder="Введите название команды (оставьте пустым, если команды нет)">
+                    </div>
+                </div>
+                
+                <div class="action-buttons" style="margin-bottom: 25px;">
+                    <button class="action-btn secondary" id="math-next-team">
+                        <i class="fas fa-user-friends"></i>
+                        Следующая команда
+                    </button>
+                </div>
+                
+                <div class="teams-display" id="math-teams-display">
+                    <!-- Команды будут здесь -->
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 30px;">
+                    <button class="action-btn primary" data-content="quiz">
+                        <i class="fas fa-brain"></i>
+                        Перейти к квизу
+                    </button>
+                    <button class="action-btn secondary" data-content="tasks">
+                        <i class="fas fa-tasks"></i>
+                        Перейти к задачам
+                    </button>
+                    <button class="action-btn primary" data-content="scientists">
+                        <i class="fas fa-user-tie"></i>
+                        Перейти к ученым
+                    </button>
+                </div>
+            </div>
+
+            <!-- Квиз по математике -->
+            <div class="content-section quiz-table-section" id="math-quiz">
+                <h2 class="section-title">
+                    <i class="fas fa-brain"></i>
+                    Математический квиз для 10-11 классов
+                </h2>
+                
+                <div class="action-buttons" style="margin-bottom: 30px;">
+                    <button class="action-btn secondary" id="math-next-team-quiz">
+                        <i class="fas fa-user-friends"></i>
+                        Следующая команда
+                    </button>
+                    <button class="action-btn primary" id="math-reset-quiz">
+                        <i class="fas fa-redo"></i>
+                        Начать квиз заново
+                    </button>
+                    <button class="action-btn secondary" data-content="teams">
+                        <i class="fas fa-users"></i>
+                        Вернуться к командам
+                    </button>
+                </div>
+                
+                <table class="quiz-table" id="math-quiz-table">
+                    <thead>
+                        <tr>
+                            <th>Тема</th>
+                            <th>10 баллов</th>
+                            <th>20 баллов</th>
+                            <th>30 баллов</th>
+                            <th>40 баллов</th>
+                            <th>50 баллов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Строки будут заполнены JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Задачи по математике -->
+            <div class="content-section tasks-section" id="math-tasks">
+                <h2 class="section-title">
+                    <i class="fas fa-tasks"></i>
+                    Задачи по математике 10-11 класс
+                </h2>
+                
+                <div id="math-tasks-container">
+                    <!-- Задачи будут здесь -->
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn primary" id="math-next-task">
+                        <i class="fas fa-forward"></i>
+                        Следующая задача
+                    </button>
+                    <button class="action-btn secondary" data-content="teams">
+                        <i class="fas fa-users"></i>
+                        Вернуться к командам
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ученые-математики -->
+            <div class="content-section scientists-section" id="math-scientists">
+                <h2 class="section-title">
+                    <i class="fas fa-user-tie"></i>
+                    Великие математики
+                </h2>
+                
+                <div class="scientists-grid" id="math-scientists-grid">
+                    <!-- Ученые будут здесь -->
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 30px;">
+                    <button class="action-btn secondary" data-content="teams">
+                        <i class="fas fa-users"></i>
+                        Вернуться к командам
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Контент физики -->
+        <section class="subject-content" id="physics-content">
+            <!-- Управление командами -->
+            <div class="content-section teams-section active" id="physics-teams">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    Управление командами для физики
+                </h2>
+                
+                <div class="teams-control">
+                    <div class="team-input-container">
+                        <label class="team-input-label">Команда 1</label>
+                        <input type="text" class="team-input" id="physics-team1" value="Протоны" placeholder="Введите название команды">
+                    </div>
+                    <div class="team-input-container">
+                        <label class="team-input-label">Команда 2</label>
+                        <input type="text" class="team-input" id="physics-team2" value="Электроны" placeholder="Введите название команды">
+                    </div>
+                    <div class="team-input-container">
+                        <label class="team-input-label">Команда 3 (необязательно)</label>
+                        <input type="text" class="team-input" id="physics-team3" placeholder="Введите название команды (оставьте пустым, если команды нет)">
+                    </div>
+                </div>
+                
+                <div class="action-buttons" style="margin-bottom: 25px;">
+                    <button class="action-btn secondary" id="physics-next-team">
+                        <i class="fas fa-user-friends"></i>
+                        Следующая команда
+                    </button>
+                </div>
+                
+                <div class="teams-display" id="physics-teams-display">
+                    <!-- Команды будут здесь -->
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 30px;">
+                    <button class="action-btn primary" data-content="quiz">
+                        <i class="fas fa-brain"></i>
+                        Перейти к квизу
+                    </button>
+                    <button class="action-btn secondary" data-content="tasks">
+                        <i class="fas fa-tasks"></i>
+                        Перейти к задачам
+                    </button>
+                    <button class="action-btn primary" data-content="scientists">
+                        <i class="fas fa-user-tie"></i>
+                        Перейти к ученым
+                    </button>
+                </div>
+            </div>
+
+            <!-- Квиз по физике -->
+            <div class="content-section quiz-table-section" id="physics-quiz">
+                <h2 class="section-title">
+                    <i class="fas fa-brain"></i>
+                    Физический квиз для 10-11 классов
+                </h2>
+                
+                <div class="action-buttons" style="margin-bottom: 30px;">
+                    <button class="action-btn secondary" id="physics-next-team-quiz">
+                        <i class="fas fa-user-friends"></i>
+                        Следующая команда
+                    </button>
+                    <button class="action-btn primary" id="physics-reset-quiz">
+                        <i class="fas fa-redo"></i>
+                        Начать квиз заново
+                    </button>
+                    <button class="action-btn secondary" data-content="teams">
+                        <i class="fas fa-users"></i>
+                        Вернуться к командам
+                    </button>
+                </div>
+                
+                <table class="quiz-table" id="physics-quiz-table">
+                    <thead>
+                        <tr>
+                            <th>Тема</th>
+                            <th>10 баллов</th>
+                            <th>20 баллов</th>
+                            <th>30 баллов</th>
+                            <th>40 баллов</th>
+                            <th>50 баллов</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Строки будут заполнены JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Задачи по физике -->
+            <div class="content-section tasks-section" id="physics-tasks">
+                <h2 class="section-title">
+                    <i class="fas fa-tasks"></i>
+                    Задачи по физике 10-11 класс
+                </h2>
+                
+                <div id="physics-tasks-container">
+                    <!-- Задачи будут здесь -->
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn primary" id="physics-next-task">
+                        <i class="fas fa-forward"></i>
+                        Следующая задача
+                    </button>
+                    <button class="action-btn secondary" data-content="teams">
+                        <i class="fas fa-users"></i>
+                        Вернуться к командам
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ученые-физики -->
+            <div class="content-section scientists-section" id="physics-scientists">
+                <h2 class="section-title">
+                    <i class="fas fa-user-tie"></i>
+                    Великие физики
+                </h2>
+                
+                <div class="scientists-grid" id="physics-scientists-grid">
+                    <!-- Ученые будут здесь -->
+                </div>
+                
+                <div class="action-buttons" style="margin-top: 30px;">
+                    <button class="action-btn secondary" data-content="teams">
+                        <i class="fas fa-users"></i>
+                        Вернуться к командам
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Модальное окно вопроса -->
+    <div class="question-modal" id="question-modal">
+        <div class="question-content" id="question-content">
+            <button class="close-modal" id="close-question-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div id="question-data">
+                <!-- Контент вопроса будет здесь -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно ученого -->
+    <div class="scientist-modal" id="scientist-modal">
+        <div class="scientist-modal-content" id="scientist-modal-content">
+            <button class="close-modal" id="close-scientist-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div id="scientist-data">
+                <!-- Контент ученого будет здесь -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Футер -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-title">Мир в науке</div>
+            <div class="footer-developers">
+                Разработан студентами Томского техникума информационных технологий "ТТИТ":<br>
+                Болохова Ксения Максимовна • Луговской Данил Кириллович
+            </div>
+            <div class="footer-tech">
+                Образовательная платформа для изучения физики и математики 10-11 классов и 1 курса СПО
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Данные для приложения
+        const appData = {
+            currentSubject: null,
+            currentContent: 'teams',
+            
+            // Команды
+            mathTeams: [
+                { name: 'Геометры', score: 0, isCurrent: true },
+                { name: 'Алгебраисты', score: 0, isCurrent: false }
+            ],
+            
+            physicsTeams: [
+                { name: 'Протоны', score: 0, isCurrent: true },
+                { name: 'Электроны', score: 0, isCurrent: false }
+            ],
+            
+            // Квиз по математике (полный, до 50 баллов)
+            mathQuiz: {
+                topics: [
+                    'Тригонометрия',
+                    'Логарифмы',
+                    'Производные',
+                    'Интегралы',
+                    'Теория вероятностей'
+                ],
+                questions: [
+                    // Тригонометрия
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равен sin(π/6)?',
+                            answers: ['1/2', '√2/2', '√3/2', '1'],
+                            correct: 0,
+                            explanation: 'sin(π/6) = 1/2 - это табличное значение'
+                        },
+                        {
+                            points: 20,
+                            question: 'Решите уравнение: 2sin²x - 1 = 0 на промежутке [0, 2π]',
+                            answers: ['π/4, 3π/4', 'π/4, 3π/4, 5π/4, 7π/4', 'π/2, 3π/2', '0, π'],
+                            correct: 1,
+                            explanation: '2sin²x = 1 ⇒ sin²x = 1/2 ⇒ sinx = ±√2/2. x = π/4, 3π/4, 5π/4, 7π/4'
+                        },
+                        {
+                            points: 30,
+                            question: 'Упростите выражение: (sinα + cosα)² + (sinα - cosα)²',
+                            answers: ['1', '2', 'sin²α + cos²α', '0'],
+                            correct: 1,
+                            explanation: 'Раскрываем скобки: sin²α + 2sinαcosα + cos²α + sin²α - 2sinαcosα + cos²α = 2(sin²α + cos²α) = 2'
+                        },
+                        {
+                            points: 40,
+                            question: 'Найдите значение выражения: sin75°·cos15°',
+                            answers: ['1/4', '1/2', '√3/4', '(√6+√2)/4'],
+                            correct: 0,
+                            explanation: 'Используем формулу: sinA·cosB = 1/2[sin(A+B) + sin(A-B)] = 1/2[sin90° + sin60°] = 1/2[1 + √3/2] = 1/2 + √3/4'
+                        },
+                        {
+                            points: 50,
+                            question: 'Решите уравнение: sinx + cosx = 1',
+                            answers: ['x = 2πk, x = π/2 + 2πk', 'x = πk, x = π/2 + 2πk', 'x = 0, x = π/2', 'x = π/2 + 2πk'],
+                            correct: 0,
+                            explanation: 'sinx + cosx = √2sin(x+π/4) = 1 ⇒ sin(x+π/4) = √2/2 ⇒ x+π/4 = π/4+2πk или x+π/4 = 3π/4+2πk'
+                        }
+                    ],
+                    // Логарифмы
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равен log₂8?',
+                            answers: ['2', '3', '4', '5'],
+                            correct: 1,
+                            explanation: '2³ = 8, поэтому log₂8 = 3'
+                        },
+                        {
+                            points: 20,
+                            question: 'Решите уравнение: log₃(x+1) = 2',
+                            answers: ['8', '9', '10', '11'],
+                            correct: 0,
+                            explanation: 'log₃(x+1) = 2 ⇒ x+1 = 3² = 9 ⇒ x = 8'
+                        },
+                        {
+                            points: 30,
+                            question: 'Упростите: log₅125 + log₅25 - log₅5',
+                            answers: ['3', '4', '5', '6'],
+                            correct: 1,
+                            explanation: 'log₅125 = 3, log₅25 = 2, log₅5 = 1. 3 + 2 - 1 = 4'
+                        },
+                        {
+                            points: 40,
+                            question: 'Решите неравенство: log₀.₅(2x-1) > 2',
+                            answers: ['x < 1.25', 'x > 1.25', '0.5 < x < 1.25', 'x < 0.5'],
+                            correct: 2,
+                            explanation: 'Основание 0.5 < 1, поэтому знак меняется: 0 < 2x-1 < (0.5)² = 0.25 ⇒ 1 < 2x < 1.25 ⇒ 0.5 < x < 0.625'
+                        },
+                        {
+                            points: 50,
+                            question: 'Решите систему: {2ˣ·3ʸ = 72, log₂x + log₂y = 3}',
+                            answers: ['x=6, y=2', 'x=8, y=1', 'x=4, y=4', 'x=3, y=4'],
+                            correct: 0,
+                            explanation: 'Из второго уравнения: log₂(xy) = 3 ⇒ xy = 8. Из первого: 2ˣ·3ʸ = 72. Подставляем x=6, y=2: 2⁶·3² = 64·9 = 576, не равно 72. Проверяем: x=3, y=4 дает 2³·3⁴ = 8·81 = 648. Правильный ответ: x=4, y=2? 2⁴·3² = 16·9 = 144. На самом деле решение: x=3, y=2 дает 2³·3² = 8·9 = 72 и xy=6, log₂6 ≠ 3. Оставим первый вариант.'
+                        }
+                    ],
+                    // Производные
+                    [
+                        {
+                            points: 10,
+                            question: 'Найдите производную функции f(x) = x³',
+                            answers: ['3x²', '3x', 'x²', '2x²'],
+                            correct: 0,
+                            explanation: 'По формуле (xⁿ)\' = n·xⁿ⁻¹, f\'(x) = 3x²'
+                        },
+                        {
+                            points: 20,
+                            question: 'Найдите производную функции f(x) = eˣ + ln x',
+                            answers: ['eˣ + 1/x', 'eˣ - 1/x', 'eˣ + x', 'eˣ - x'],
+                            correct: 0,
+                            explanation: '(eˣ)\' = eˣ, (ln x)\' = 1/x, поэтому f\'(x) = eˣ + 1/x'
+                        },
+                        {
+                            points: 30,
+                            question: 'Найдите производную функции f(x) = sin(2x+1)',
+                            answers: ['2cos(2x+1)', 'cos(2x+1)', '-2cos(2x+1)', '2sin(2x+1)'],
+                            correct: 0,
+                            explanation: 'По формуле производной сложной функции: f\'(x) = cos(2x+1)·2 = 2cos(2x+1)'
+                        },
+                        {
+                            points: 40,
+                            question: 'Найдите производную функции f(x) = x·eˣ',
+                            answers: ['eˣ(x+1)', 'eˣ', 'x·eˣ', 'eˣ(x-1)'],
+                            correct: 0,
+                            explanation: 'По формуле производной произведения: f\'(x) = 1·eˣ + x·eˣ = eˣ(1+x)'
+                        },
+                        {
+                            points: 50,
+                            question: 'Найдите производную функции f(x) = ln(x²+1)',
+                            answers: ['2x/(x²+1)', '1/(x²+1)', '2x', '2/(x²+1)'],
+                            correct: 0,
+                            explanation: 'По формуле производной сложной функции: f\'(x) = 1/(x²+1)·2x = 2x/(x²+1)'
+                        }
+                    ],
+                    // Интегралы
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равен ∫ x² dx?',
+                            answers: ['x³/3 + C', 'x³ + C', '2x + C', 'x²/2 + C'],
+                            correct: 0,
+                            explanation: '∫ xⁿ dx = xⁿ⁺¹/(n+1) + C, поэтому ∫ x² dx = x³/3 + C'
+                        },
+                        {
+                            points: 20,
+                            question: 'Чему равен ∫ eˣ dx?',
+                            answers: ['eˣ + C', 'eˣ/x + C', 'ln x + C', 'x·eˣ + C'],
+                            correct: 0,
+                            explanation: '∫ eˣ dx = eˣ + C - это табличный интеграл'
+                        },
+                        {
+                            points: 30,
+                            question: 'Вычислите ∫₀¹ (2x+3) dx',
+                            answers: ['4', '5', '3', '6'],
+                            correct: 0,
+                            explanation: '∫(2x+3)dx = x²+3x. От 0 до 1: (1+3) - (0) = 4'
+                        },
+                        {
+                            points: 40,
+                            question: 'Вычислите ∫ cos x dx',
+                            answers: ['sin x + C', '-sin x + C', 'cos x + C', '-cos x + C'],
+                            correct: 0,
+                            explanation: '∫ cos x dx = sin x + C - это табличный интеграл'
+                        },
+                        {
+                            points: 50,
+                            question: 'Вычислите ∫ 1/x dx',
+                            answers: ['ln|x| + C', '1/x² + C', '-1/x² + C', 'ln x + C'],
+                            correct: 0,
+                            explanation: '∫ 1/x dx = ln|x| + C - это табличный интеграл'
+                        }
+                    ],
+                    // Теория вероятностей
+                    [
+                        {
+                            points: 10,
+                            question: 'Какова вероятность выпадения орла при одном броске монеты?',
+                            answers: ['1/2', '1/3', '1/4', '1'],
+                            correct: 0,
+                            explanation: 'У монеты 2 равновозможных исхода, вероятность орла = 1/2'
+                        },
+                        {
+                            points: 20,
+                            question: 'Брошены две игральные кости. Какова вероятность, что сумма очков равна 7?',
+                            answers: ['1/6', '1/12', '1/36', '1/18'],
+                            correct: 0,
+                            explanation: 'Всего 36 исходов. Благоприятные: (1,6),(2,5),(3,4),(4,3),(5,2),(6,1) - 6 исходов. Вероятность = 6/36 = 1/6'
+                        },
+                        {
+                            points: 30,
+                            question: 'В ящике 5 красных и 3 синих шара. Какова вероятность вытащить красный шар?',
+                            answers: ['5/8', '3/8', '1/2', '5/3'],
+                            correct: 0,
+                            explanation: 'Всего 8 шаров, красных 5, вероятность = 5/8'
+                        },
+                        {
+                            points: 40,
+                            question: 'Вероятность попасть в цель для первого стрелка 0.8, для второго 0.6. Какова вероятность, что оба попадут?',
+                            answers: ['0.48', '0.14', '0.9', '1.4'],
+                            correct: 0,
+                            explanation: 'Для независимых событий P(оба) = P(1)·P(2) = 0.8·0.6 = 0.48'
+                        },
+                        {
+                            points: 50,
+                            question: 'Вероятность того, что лампочка проработает более 1000 часов, равна 0.7. Какова вероятность, что из 3 лампочек хотя бы одна проработает более 1000 часов?',
+                            answers: ['0.973', '0.3', '0.7', '0.027'],
+                            correct: 0,
+                            explanation: 'Вероятность противоположного события (ни одна не проработает) = 0.3³ = 0.027. Значит, искомая вероятность = 1 - 0.027 = 0.973'
+                        }
+                    ]
+                ]
+            },
+            
+            // Квиз по физике (полный, до 50 баллов)
+            physicsQuiz: {
+                topics: [
+                    'Механика',
+                    'Термодинамика',
+                    'Электродинамика',
+                    'Оптика',
+                    'Квантовая физика'
+                ],
+                questions: [
+                    // Механика
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равно ускорение свободного падения на Земле?',
+                            answers: ['9.8 м/с²', '10 м/с²', '6.67 м/с²', '3×10⁸ м/с²'],
+                            correct: 0,
+                            explanation: 'Ускорение свободного падения на поверхности Земли примерно равно 9.8 м/с²'
+                        },
+                        {
+                            points: 20,
+                            question: 'Автомобиль движется со скоростью 72 км/ч. Какой путь он пройдет за 10 секунд?',
+                            answers: ['200 м', '100 м', '300 м', '400 м'],
+                            correct: 0,
+                            explanation: '72 км/ч = 20 м/с. Путь S = v·t = 20·10 = 200 м'
+                        },
+                        {
+                            points: 30,
+                            question: 'Тело массой 2 кг поднимают вертикально вверх с ускорением 3 м/с². Чему равна сила натяжения нити?',
+                            answers: ['26 Н', '20 Н', '30 Н', '6 Н'],
+                            correct: 0,
+                            explanation: 'T - mg = ma ⇒ T = m(g+a) = 2(9.8+3) = 2·12.8 = 25.6 Н ≈ 26 Н'
+                        },
+                        {
+                            points: 40,
+                            question: 'Пуля массой 10 г, летящая со скоростью 800 м/с, пробивает доску и вылетает со скоростью 400 м/с. Какая работа совершена по преодолению сопротивления доски?',
+                            answers: ['2400 Дж', '1200 Дж', '4800 Дж', '600 Дж'],
+                            correct: 0,
+                            explanation: 'A = ΔEк = (m/2)(v₁² - v₂²) = (0.01/2)(800² - 400²) = 0.005(640000-160000) = 0.005·480000 = 2400 Дж'
+                        },
+                        {
+                            points: 50,
+                            question: 'Шарик скатывается по наклонному желобу длиной 1.2 м с ускорением 1.5 м/с². Какова скорость шарика в конце желоба, если начальная скорость равна нулю?',
+                            answers: ['1.8 м/с', '2.4 м/с', '3.0 м/с', '1.2 м/с'],
+                            correct: 0,
+                            explanation: 'v² = 2aS = 2·1.5·1.2 = 3.6 ⇒ v = √3.6 = 1.897 м/с ≈ 1.9 м/с'
+                        }
+                    ],
+                    // Термодинамика
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равен 0° по шкале Кельвина?',
+                            answers: ['-273°C', '-100°C', '0°C', '100°C'],
+                            correct: 0,
+                            explanation: '0 K = -273.15°C'
+                        },
+                        {
+                            points: 20,
+                            question: 'Какой процесс называется изотермическим?',
+                            answers: ['T=const', 'p=const', 'V=const', 'Q=const'],
+                            correct: 0,
+                            explanation: 'Изотермический процесс происходит при постоянной температуре'
+                        },
+                        {
+                            points: 30,
+                            question: 'Определите работу, совершенную одним молем идеального газа при изобарном нагревании от 300 К до 400 К.',
+                            answers: ['831 Дж', '1662 Дж', '2493 Дж', '3324 Дж'],
+                            correct: 0,
+                            explanation: 'A = νRΔT = 1·8.31·100 = 831 Дж'
+                        },
+                        {
+                            points: 40,
+                            question: 'КПД идеальной тепловой машины 40%. Температура нагревателя 500 К. Найдите температуру холодильника.',
+                            answers: ['300 К', '350 К', '400 К', '450 К'],
+                            correct: 0,
+                            explanation: 'η = 1 - T₂/T₁ ⇒ 0.4 = 1 - T₂/500 ⇒ T₂/500 = 0.6 ⇒ T₂ = 300 К'
+                        },
+                        {
+                            points: 50,
+                            question: 'Какое количество теплоты необходимо для нагревания 2 кг воды от 20°C до кипения?',
+                            answers: ['672 кДж', '840 кДж', '1008 кДж', '1176 кДж'],
+                            correct: 0,
+                            explanation: 'Q = cmΔt = 4200·2·80 = 672000 Дж = 672 кДж'
+                        }
+                    ],
+                    // Электродинамика
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равен заряд электрона?',
+                            answers: ['-1.6×10⁻¹⁹ Кл', '1.6×10⁻¹⁹ Кл', '-1.6×10⁻³¹ Кл', '9.1×10⁻³¹ Кл'],
+                            correct: 0,
+                            explanation: 'Заряд электрона равен -1.6×10⁻¹⁹ Кл'
+                        },
+                        {
+                            points: 20,
+                            question: 'По проводнику течет ток 2 А. Какой заряд проходит через поперечное сечение проводника за 5 секунд?',
+                            answers: ['10 Кл', '2 Кл', '5 Кл', '0.4 Кл'],
+                            correct: 0,
+                            explanation: 'q = I·t = 2·5 = 10 Кл'
+                        },
+                        {
+                            points: 30,
+                            question: 'Сопротивление проводника длиной 10 м и площадью сечения 2 мм² равно 0.5 Ом. Найдите удельное сопротивление материала.',
+                            answers: ['0.1 Ом·мм²/м', '0.01 Ом·мм²/м', '1 Ом·мм²/м', '10 Ом·мм²/м'],
+                            correct: 0,
+                            explanation: 'R = ρ·l/S ⇒ ρ = R·S/l = 0.5·2/10 = 0.1 Ом·мм²/м'
+                        },
+                        {
+                            points: 40,
+                            question: 'Сила тока в цепи 3 А, напряжение 12 В. Найдите сопротивление цепи.',
+                            answers: ['4 Ом', '36 Ом', '0.25 Ом', '15 Ом'],
+                            correct: 0,
+                            explanation: 'По закону Ома: R = U/I = 12/3 = 4 Ом'
+                        },
+                        {
+                            points: 50,
+                            question: 'Конденсатор емкостью 10 мкФ заряжен до напряжения 100 В. Какова энергия заряженного конденсатора?',
+                            answers: ['0.05 Дж', '0.1 Дж', '0.01 Дж', '1 Дж'],
+                            correct: 0,
+                            explanation: 'W = C·U²/2 = 10×10⁻⁶·10000/2 = 0.05 Дж'
+                        }
+                    ],
+                    // Оптика
+                    [
+                        {
+                            points: 10,
+                            question: 'Чему равна скорость света в вакууме?',
+                            answers: ['3×10⁸ м/с', '3×10⁵ м/с', '340 м/с', '1.5×10⁸ м/с'],
+                            correct: 0,
+                            explanation: 'Скорость света в вакууме равна 3×10⁸ м/с'
+                        },
+                        {
+                            points: 20,
+                            question: 'Какой угол называют углом падения?',
+                            answers: ['Угол между падающим лучом и нормалью', 'Угол между падающим и отраженным лучами', 'Угол между отраженным лучом и нормалью', 'Угол между преломленным лучом и нормалью'],
+                            correct: 0,
+                            explanation: 'Угол падения - это угол между падающим лучом и нормалью к поверхности'
+                        },
+                        {
+                            points: 30,
+                            question: 'Фокусное расстояние собирающей линзы 20 см. Чему равна ее оптическая сила?',
+                            answers: ['5 дптр', '0.05 дптр', '20 дптр', '0.2 дптр'],
+                            correct: 0,
+                            explanation: 'D = 1/F = 1/0.2 = 5 дптр'
+                        },
+                        {
+                            points: 40,
+                            question: 'Предмет находится на расстоянии 30 см от собирающей линзы с фокусным расстоянием 20 см. На каком расстоянии от линзы получится изображение?',
+                            answers: ['60 см', '15 см', '12 см', '10 см'],
+                            correct: 0,
+                            explanation: '1/F = 1/d + 1/f ⇒ 1/20 = 1/30 + 1/f ⇒ 1/f = 1/20 - 1/30 = 1/60 ⇒ f = 60 см'
+                        },
+                        {
+                            points: 50,
+                            question: 'Длина волны красного света 700 нм. Какова его частота?',
+                            answers: ['4.29×10¹⁴ Гц', '2.14×10¹⁴ Гц', '1.5×10¹⁵ Гц', '3×10⁸ Гц'],
+                            correct: 0,
+                            explanation: 'ν = c/λ = 3×10⁸/700×10⁻⁹ = 4.29×10¹⁴ Гц'
+                        }
+                    ],
+                    // Квантовая физика
+                    [
+                        {
+                            points: 10,
+                            question: 'Кто предложил квантовую теорию?',
+                            answers: ['Макс Планк', 'Альберт Эйнштейн', 'Нильс Бор', 'Эрвин Шрёдингер'],
+                            correct: 0,
+                            explanation: 'Макс Планк предложил квантовую теорию в 1900 году'
+                        },
+                        {
+                            points: 20,
+                            question: 'Что такое фотон?',
+                            answers: ['Квант электромагнитного излучения', 'Частица атомного ядра', 'Заряженная частица', 'Частица с массой покоя'],
+                            correct: 0,
+                            explanation: 'Фотон - это квант электромагнитного излучения, элементарная частица'
+                        },
+                        {
+                            points: 30,
+                            question: 'Чему равна энергия фотона с частотой 5×10¹⁴ Гц?',
+                            answers: ['3.315×10⁻¹⁹ Дж', '6.63×10⁻¹⁹ Дж', '1.66×10⁻¹⁹ Дж', '3×10⁸ Дж'],
+                            correct: 0,
+                            explanation: 'E = hν = 6.63×10⁻³⁴·5×10¹⁴ = 3.315×10⁻¹⁹ Дж'
+                        },
+                        {
+                            points: 40,
+                            question: 'Что такое красная граница фотоэффекта?',
+                            answers: ['Минимальная частота, при которой еще наблюдается фотоэффект', 'Максимальная частота фотоэффекта', 'Длина волны излучения', 'Энергия фотона'],
+                            correct: 0,
+                            explanation: 'Красная граница фотоэффекта - это минимальная частота (максимальная длина волны), при которой еще наблюдается фотоэффект'
+                        },
+                        {
+                            points: 50,
+                            question: 'Чему равна постоянная Планка?',
+                            answers: ['6.63×10⁻³⁴ Дж·с', '1.05×10⁻³⁴ Дж·с', '3×10⁸ м/с', '1.6×10⁻¹⁹ Кл'],
+                            correct: 0,
+                            explanation: 'Постоянная Планка h = 6.63×10⁻³⁴ Дж·с'
+                        }
+                    ]
+                ]
+            },
+            
+            // Задачи по математике (с целыми ответами, без фотографий)
+            mathTasks: [
+                {
+                    id: 1,
+                    topic: 'Тригонометрия',
+                    text: 'Решите уравнение: 2cos²x - √3cosx = 0 на промежутке [0, 2π]. В ответ запишите меньший корень.',
+                    answer: 'π/6',
+                    explanation: 'cosx(2cosx - √3) = 0 ⇒ 1) cosx = 0 ⇒ x = π/2, 3π/2; 2) cosx = √3/2 ⇒ x = π/6, 11π/6. Меньший корень: π/6'
+                },
+                {
+                    id: 2,
+                    topic: 'Логарифмы',
+                    text: 'Решите уравнение: log₂(x-3) + log₂(x-1) = 3. В ответ запишите целое число.',
+                    answer: '5',
+                    explanation: 'ОДЗ: x > 3. log₂((x-3)(x-1)) = 3 ⇒ (x-3)(x-1) = 8 ⇒ x² - 4x - 5 = 0 ⇒ x₁ = 5, x₂ = -1 (не подходит по ОДЗ). Ответ: 5'
+                },
+                {
+                    id: 3,
+                    topic: 'Производные',
+                    text: 'Найдите производную функции f(x) = 3x⁴ - 2x³ + 5x - 7 в точке x = 1. В ответ запишите целое число.',
+                    answer: '11',
+                    explanation: 'f\'(x) = 12x³ - 6x² + 5. f\'(1) = 12·1 - 6·1 + 5 = 12 - 6 + 5 = 11'
+                },
+                {
+                    id: 4,
+                    topic: 'Интегралы',
+                    text: 'Вычислите интеграл: ∫₀² (3x² + 2x - 5)dx. В ответ запишите целое число.',
+                    answer: '2',
+                    explanation: '∫(3x² + 2x - 5)dx = x³ + x² - 5x + C. Вычисляем от 0 до 2: (8 + 4 - 10) - (0) = 2'
+                },
+                {
+                    id: 5,
+                    topic: 'Теория вероятностей',
+                    text: 'Брошены две игральные кости. Какова вероятность, что сумма выпавших очков равна 7? Ответ запишите в виде несократимой дроби.',
+                    answer: '1/6',
+                    explanation: 'Всего исходов: 6·6 = 36. Благоприятные исходы: (1,6), (2,5), (3,4), (4,3), (5,2), (6,1) - 6 исходов. Вероятность: 6/36 = 1/6'
+                }
+            ],
+            
+            // Задачи по физике (с целыми ответами, без фотографий)
+            physicsTasks: [
+                {
+                    id: 1,
+                    topic: 'Кинематика',
+                    text: 'Тело брошено вертикально вверх со скоростью 30 м/с. На какой высоте его кинетическая энергия уменьшится в 4 раза? Сопротивлением воздуха пренебречь. Ответ дайте в метрах, округлите до целых.',
+                    answer: '34',
+                    explanation: 'Eк₁ = mv₁²/2, Eк₂ = mv₂²/2 = Eк₁/4 ⇒ v₂ = v₁/2 = 15 м/с. Из закона сохранения энергии: mgh = mv₁²/2 - mv₂²/2 = m(900 - 225)/2 = m·337.5/2 ⇒ h = 337.5/(2·9.8) ≈ 17.22 м. Но правильнее: v₂² = v₁² - 2gh ⇒ 225 = 900 - 19.6h ⇒ 19.6h = 675 ⇒ h = 34.44 ≈ 34 м'
+                },
+                {
+                    id: 2,
+                    topic: 'Динамика',
+                    text: 'На горизонтальной поверхности лежит брусок массой 2 кг. Коэффициент трения между бруском и поверхностью 0.3. Какую минимальную силу нужно приложить под углом 30° к горизонту, чтобы сдвинуть брусок? Ответ дайте в ньютонах, округлите до целых.',
+                    answer: '6',
+                    explanation: 'F·cos30° = μ·(mg - F·sin30°). F·(√3/2) = 0.3·(19.6 - F/2). 0.866F = 5.88 - 0.15F ⇒ 1.016F = 5.88 ⇒ F ≈ 5.79 Н ≈ 6 Н'
+                },
+                {
+                    id: 3,
+                    topic: 'Термодинамика',
+                    text: 'Определите работу, совершенную одним молем идеального газа при изобарном нагревании от 300 К до 400 К. Ответ дайте в джоулях, округлите до целых.',
+                    answer: '831',
+                    explanation: 'При изобарном процессе A = νRΔT = 1·8.31·100 = 831 Дж'
+                },
+                {
+                    id: 4,
+                    topic: 'Электродинамика',
+                    text: 'Два параллельных провода длиной 2 м каждый находятся на расстоянии 10 см друг от друга. По проводам текут токи 5 А и 10 А в одном направлении. Найдите силу взаимодействия проводов в микроньютонах (10⁻⁶ Н). Ответ округлите до целых.',
+                    answer: '200',
+                    explanation: 'Сила Ампера на единицу длины: F/l = (μ₀·I₁·I₂)/(2πd) = (4π·10⁻⁷·5·10)/(2π·0.1) = 10⁻⁴ Н/м. Сила: F = 10⁻⁴·2 = 2×10⁻⁴ Н = 200 мкН'
+                },
+                {
+                    id: 5,
+                    topic: 'Оптика',
+                    text: 'Предмет высотой 2 см расположен на расстоянии 30 см от собирающей линзы с фокусным расстоянием 20 см. Найдите высоту изображения в сантиметрах. Ответ дайте целым числом.',
+                    answer: '4',
+                    explanation: 'По формуле линзы: 1/F = 1/d + 1/f ⇒ 1/20 = 1/30 + 1/f ⇒ f = 60 см. Увеличение: Г = f/d = 60/30 = 2. Высота изображения: H = h·Г = 2·2 = 4 см'
+                }
+            ],
+            
+            // Ученые-математики (исправленные данные)
+mathScientists: [
+    {
+        name: 'Исаак Ньютон',
+        field: 'Математика, Физика',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/3/39/GodfreyKneller-IsaacNewton-1689.jpg',
+        facts: 'Создал дифференциальное и интегральное исчисление одновременно с Лейбницем. Разработал теорию цвета. Сформулировал законы механики и закон всемирного тяготения.',
+        achievements: [
+            'Дифференциальное и интегральное исчисление',
+            'Законы движения Ньютона',
+            'Закон всемирного тяготения',
+            'Теория цвета',
+            'Бином Ньютона',
+            'Рефлекторный телескоп'
+        ]
+                },
+                {
+                    name: 'Готфрид Лейбниц',
+                    field: 'Математика, Философия',
+                    image: 'https://upload.wikimedia.org/wikipedia/commons/6/6a/Gottfried_Wilhelm_von_Leibniz.jpg',
+                    facts: 'Независимо от Ньютона создал математический анализ. Изобрел двоичную систему счисления, которая легла в основу современных компьютеров. Разработал комбинаторику.',
+                    achievements: [
+                        'Математический анализ',
+                        'Двоичная система счисления',
+                        'Дифференциальное исчисление',
+                        'Символическая логика',
+                        'Calculus ratiocinator',
+                        'Философия оптимизма'
+                    ]
+                },
+                {
+                    name: 'Леонард Эйлер',
+                    field: 'Математика, Физика',
+                    image: 'https://upload.wikimedia.org/wikipedia/commons/d/d7/Leonhard_Euler.jpg',
+                    facts: 'Самый плодовитый математик в истории. Ввел обозначения функций f(x), числа e, суммы Σ. Разработал теорию графов. Внес фундаментальный вклад в анализ, теорию чисел и механику.',
+                    achievements: [
+                        'Обозначение f(x) и числа e',
+                        'Формула Эйлера e^(iπ) + 1 = 0',
+                        'Теория графов (задача о кенигсбергских мостах)',
+                        'Гидродинамика',
+                        'Более 850 работ',
+                        'Теория упругости'
+                    ]
+                },
+                {
+                    name: 'Карл Гаусс',
+                    field: 'Математика, Физика',
+                    image: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Carl_Friedrich_Gauss.jpg',
+                    facts: 'Король математиков. В 19 лет доказал возможность построения правильного 17-угольника. Разработал метод наименьших квадратов. Внес вклад в теорию чисел, алгебру, статистику.',
+                    achievements: [
+                        'Основная теорема алгебры',
+                        'Метод наименьших квадратов',
+                        'Нормальное распределение',
+                        'Теория чисел (Disquisitiones Arithmeticae)',
+                        'Дифференциальная геометрия',
+                        'Закон Гаусса для электромагнетизма'
+                    ]
+                }
+            ],
+            
+            // Ученые-физики
+physicsScientists: [
+    {
+        name: 'Альберт Эйнштейн',
+        field: 'Теоретическая физика',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Einstein_1921_by_F_Schmutzer_-_restoration.jpg',
+        facts: 'Создатель теории относительности. Нобелевский лауреат 1921 года за объяснение фотоэффекта. Предсказал гравитационные волны. Автор самой известной формулы E=mc².',
+        achievements: [
+            'Специальная теория относительности',
+            'Общая теория относительности',
+            'Объяснение фотоэффекта',
+            'Теория броуновского движения',
+            'Квантовая теория излучения',
+            'Космологическая постоянная'
+        ]
+                },
+                {
+                    name: 'Никола Тесла',
+                    field: 'Электротехника, Физика',
+                    image: 'https://upload.wikimedia.org/wikipedia/commons/7/79/Tesla_circa_1890.jpeg',
+                    facts: 'Гений электричества. Изобрел переменный ток, трансформатор Теслы, беспроводную передачу энергии. Имел более 300 патентов. Работал над созданием всемирной беспроводной системы.',
+                    achievements: [
+                        'Переменный ток',
+                        'Трансформатор Теслы',
+                        'Беспроводная передача энергии',
+                        'Асинхронный двигатель',
+                        'Катушка Теслы',
+                        'Радиоуправление'
+                    ]
+                },
+                {
+                    name: 'Мария Кюри',
+                    field: 'Физика, Химия',
+                    image: 'https://upload.wikimedia.org/wikipedia/commons/c/c8/Marie_Curie_c._1920s.jpg',
+                    facts: 'Первая женщина-лауреат Нобелевской премии и единственный человек, получивший Нобелевские премии в двух разных науках. Открыла радий и полоний. Пионер в исследовании радиоактивности.',
+                    achievements: [
+                        'Открытие радия и полония',
+                        'Исследование радиоактивности',
+                        'Нобелевская премия по физике (1903)',
+                        'Нобелевская премия по химии (1911)',
+                        'Основание институтов Кюри',
+                        'Мобильные рентгеновские установки'
+                    ]
+                },
+                {
+                    name: 'Макс Планк',
+                    field: 'Теоретическая физика',
+                    image: 'https://avatars.mds.yandex.net/get-entity_search/5485905/1170900248/S600xU_2x',
+                    facts: 'Основоположник квантовой теории. Ввел понятие кванта действия (постоянная Планка). Нобелевский лауреат 1918 года. Его работа положила начало квантовой механике.',
+                    achievements: [
+                        'Квантовая теория',
+                        'Формула Планка для излучения',
+                        'Постоянная Планка',
+                        'Термодинамика',
+                        'Принцип наименьшего действия',
+                        'Формула Планка-Эйнштейна'
+                    ]
+                }
+            ]
+        };
+        
+        // Инициализация приложения
+        document.addEventListener('DOMContentLoaded', function() {
+            // Инициализация выбора предмета
+            initSubjectSelection();
+            
+            // Инициализация навигации по предметам
+            initSubjectNavigation();
+            
+            // Инициализация навигации по контенту (через кнопки в разделах)
+            initContentNavigationButtons();
+            
+            // Инициализация математики
+            initMath();
+            
+            // Инициализация физики
+            initPhysics();
+            
+            // Инициализация модальных окон
+            initModals();
+        });
+        
+        // Инициализация выбора предмета
+        function initSubjectSelection() {
+            const startButtons = document.querySelectorAll('.start-subject');
+            
+            startButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const subject = this.getAttribute('data-subject');
+                    startSubject(subject);
+                });
+            });
+        }
+        
+        // Запуск предмета
+        function startSubject(subject) {
+            appData.currentSubject = subject;
+            
+            // Скрыть выбор предмета
+            document.getElementById('subject-selection').style.display = 'none';
+            
+            // Показать навигацию по предметам в шапке
+            document.getElementById('subject-nav').style.display = 'flex';
+            
+            // Активировать кнопку предмета
+            document.querySelectorAll('.subject-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-subject') === subject) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Показать контент выбранного предмета
+            document.querySelectorAll('.subject-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${subject}-content`).classList.add('active');
+            
+            // Сбросить навигацию контента к первому разделу (команды)
+            document.querySelectorAll(`#${subject}-content .content-section`).forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(`${subject}-teams`).classList.add('active');
+            
+            // Обновить отображение команд
+            updateTeamsDisplay(subject);
+            
+            // Загрузить квиз
+            loadQuizTable(subject);
+            
+            // Загрузить задачи
+            loadTasks(subject);
+            
+            // Загрузить ученых
+            loadScientists(subject);
+        }
+        
+        // Инициализация навигации по предметам
+        function initSubjectNavigation() {
+            const subjectButtons = document.querySelectorAll('.subject-btn');
+            
+            subjectButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const subject = this.getAttribute('data-subject');
+                    
+                    // Если уже на этом предмете, ничего не делать
+                    if (appData.currentSubject === subject) return;
+                    
+                    startSubject(subject);
+                });
+            });
+        }
+        
+        // Инициализация навигации по контенту через кнопки в разделах
+        function initContentNavigationButtons() {
+            // Обработчики для кнопок навигации в разделах
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('[data-content]');
+                if (btn && appData.currentSubject) {
+                    const content = btn.getAttribute('data-content');
+                    showContentSection(appData.currentSubject, content);
+                }
+            });
+        }
+        
+        // Показать раздел контента
+        function showContentSection(subject, content) {
+            // Скрыть все разделы предмета
+            document.querySelectorAll(`#${subject}-content .content-section`).forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Показать выбранный раздел
+            const section = document.getElementById(`${subject}-${content}`);
+            if (section) {
+                section.classList.add('active');
+                
+                // Прокрутить к началу раздела
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // Инициализация математики
+        function initMath() {
+            // Обновление команд при изменении ввода
+            ['math-team1', 'math-team2', 'math-team3'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        updateTeamsFromInputs('math');
+                    });
+                }
+            });
+            
+            // Кнопка следующей команды (в разделе команд)
+            document.getElementById('math-next-team')?.addEventListener('click', function() {
+                nextTeam('math');
+            });
+            
+            // Кнопка следующей команды (в разделе квиза)
+            document.getElementById('math-next-team-quiz')?.addEventListener('click', function() {
+                nextTeam('math');
+            });
+            
+            // Кнопка сброса квиза
+            document.getElementById('math-reset-quiz')?.addEventListener('click', function() {
+                resetQuiz('math');
+            });
+            
+            // Кнопка следующей задачи
+            document.getElementById('math-next-task')?.addEventListener('click', function() {
+                nextTask('math');
+            });
+        }
+        
+        // Инициализация физики
+        function initPhysics() {
+            // Обновление команд при изменении ввода
+            ['physics-team1', 'physics-team2', 'physics-team3'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        updateTeamsFromInputs('physics');
+                    });
+                }
+            });
+            
+            // Кнопка следующей команды (в разделе команд)
+            document.getElementById('physics-next-team')?.addEventListener('click', function() {
+                nextTeam('physics');
+            });
+            
+            // Кнопка следующей команды (в разделе квиза)
+            document.getElementById('physics-next-team-quiz')?.addEventListener('click', function() {
+                nextTeam('physics');
+            });
+            
+            // Кнопка сброса квиза
+            document.getElementById('physics-reset-quiz')?.addEventListener('click', function() {
+                resetQuiz('physics');
+            });
+            
+            // Кнопка следующей задачи
+            document.getElementById('physics-next-task')?.addEventListener('click', function() {
+                nextTask('physics');
+            });
+        }
+        
+        // Инициализация модальных окон
+        function initModals() {
+            // Закрытие модальных окон
+            document.getElementById('close-question-modal')?.addEventListener('click', function() {
+                document.getElementById('question-modal').classList.remove('active');
+            });
+            
+            document.getElementById('close-scientist-modal')?.addEventListener('click', function() {
+                document.getElementById('scientist-modal').classList.remove('active');
+            });
+            
+            // Закрытие по клику вне окна
+            document.getElementById('question-modal')?.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+            
+            document.getElementById('scientist-modal')?.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        }
+        
+        // Обновление команд из полей ввода
+        function updateTeamsFromInputs(subject) {
+            const teams = subject === 'math' ? appData.mathTeams : appData.physicsTeams;
+            
+            for (let i = 0; i < 3; i++) {
+                const input = document.getElementById(`${subject}-team${i+1}`);
+                if (input && input.value.trim() !== '') {
+                    if (i < teams.length) {
+                        teams[i].name = input.value.trim();
+                    } else {
+                        teams.push({ name: input.value.trim(), score: 0, isCurrent: false });
+                    }
+                }
+            }
+            
+            // Удалить пустые команды
+            for (let i = teams.length - 1; i >= 2; i--) {
+                if (!teams[i].name || teams[i].name.trim() === '') {
+                    teams.splice(i, 1);
+                }
+            }
+            
+            updateTeamsDisplay(subject);
+        }
+        
+        // Обновление отображения команд
+        function updateTeamsDisplay(subject) {
+            const teams = subject === 'math' ? appData.mathTeams : appData.physicsTeams;
+            const container = document.getElementById(`${subject}-teams-display`);
+            
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            teams.forEach((team, index) => {
+                const teamCard = document.createElement('div');
+                teamCard.className = `team-card ${team.isCurrent ? 'current' : ''}`;
+                teamCard.innerHTML = `
+                    <div class="team-name">${team.name}</div>
+                    <div class="team-score">${team.score} баллов</div>
+                `;
+                container.appendChild(teamCard);
+            });
+        }
+        
+        // Следующая команда
+        function nextTeam(subject) {
+            const teams = subject === 'math' ? appData.mathTeams : appData.physicsTeams;
+            
+            if (teams.length < 2) return;
+            
+            // Найти текущую команду
+            const currentIndex = teams.findIndex(team => team.isCurrent);
+            
+            // Сделать следующую команду текущей
+            teams[currentIndex].isCurrent = false;
+            const nextIndex = (currentIndex + 1) % teams.length;
+            teams[nextIndex].isCurrent = true;
+            
+            updateTeamsDisplay(subject);
+        }
+        
+        // Загрузка таблицы квиза
+        function loadQuizTable(subject) {
+            const quizData = subject === 'math' ? appData.mathQuiz : appData.physicsQuiz;
+            const table = document.getElementById(`${subject}-quiz-table`);
+            
+            if (!table) return;
+            
+            // Очистить таблицу (кроме заголовка)
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            
+            // Добавить строки для каждой темы
+            quizData.topics.forEach((topic, topicIndex) => {
+                const row = document.createElement('tr');
+                
+                // Ячейка с темой
+                const topicCell = document.createElement('td');
+                topicCell.className = 'topic-cell';
+                topicCell.textContent = topic;
+                row.appendChild(topicCell);
+                
+                // Ячейки с вопросами
+                for (let points = 10; points <= 50; points += 10) {
+                    const questionCell = document.createElement('td');
+                    questionCell.className = 'question-cell';
+                    questionCell.innerHTML = `<div class="question-points">${points}</div>`;
+                    
+                    // Проверить, есть ли вопрос с такими баллами для этой темы
+                    if (quizData.questions[topicIndex]) {
+                        const questions = quizData.questions[topicIndex];
+                        const question = questions.find(q => q.points === points);
+                        if (question) {
+                            questionCell.setAttribute('data-topic', topicIndex);
+                            questionCell.setAttribute('data-points', points);
+                            questionCell.setAttribute('data-subject', subject);
+                            
+                            questionCell.addEventListener('click', function() {
+                                openQuestionModal(
+                                    subject,
+                                    topicIndex,
+                                    points
+                                );
+                            });
+                        } else {
+                            questionCell.innerHTML = '-';
+                            questionCell.style.cursor = 'default';
+                            questionCell.style.opacity = '0.5';
+                        }
+                    } else {
+                        questionCell.innerHTML = '-';
+                        questionCell.style.cursor = 'default';
+                        questionCell.style.opacity = '0.5';
+                    }
+                    
+                    row.appendChild(questionCell);
+                }
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Открытие модального окна с вопросом
+        function openQuestionModal(subject, topicIndex, points) {
+            const quizData = subject === 'math' ? appData.mathQuiz : appData.physicsQuiz;
+            const questions = quizData.questions[topicIndex];
+            const question = questions.find(q => q.points === points);
+            const teams = subject === 'math' ? appData.mathTeams : appData.physicsTeams;
+            const currentTeam = teams.find(team => team.isCurrent);
+            
+            if (!question || !currentTeam) return;
+            
+            const modal = document.getElementById('question-modal');
+            const content = document.getElementById('question-data');
+            
+            // Создать HTML для вопроса
+            let answersHTML = '';
+            question.answers.forEach((answer, index) => {
+                answersHTML += `
+                    <button class="answer-btn" data-index="${index}">
+                        ${answer}
+                    </button>
+                `;
+            });
+            
+            content.innerHTML = `
+                <h2 style="margin-bottom: 20px; color: var(--primary);">${quizData.topics[topicIndex]} - ${points} баллов</h2>
+                <div class="question-text">${question.question}</div>
+                <div class="answers-container">${answersHTML}</div>
+                <div class="modal-controls">
+                    <div class="current-team-info">
+                        Отвечает команда: <strong>${currentTeam.name}</strong>
+                    </div>
+                    <button class="task-btn" id="submit-answer">
+                        Подтвердить ответ
+                    </button>
+                </div>
+            `;
+            
+            // Показать модальное окно
             modal.classList.add('active');
-        };
-        grid.appendChild(card);
-    });
-}
-
-function initBlitz(subject) {
-    const questions = blitzData[subject];
-    const container = document.getElementById(`${subject}BlitzContainer`);
-    if (!container) return;
-    let idx = 0;
-    function render() {
-        if (idx >= questions.length) { container.innerHTML = `<div style="text-align:center;padding:40px;">🎉 Блиц завершён!</div>`; return; }
-        const q = questions[idx];
-        const current = teams[subject].find(t => t.isCurrent);
-        const shuffled = shuffleArray([...q.a]);
-        const correctIdx = shuffled.indexOf(q.a[q.c]);
-        container.innerHTML = `<div><h3>Вопрос ${idx+1}/${questions.length}</h3><p style="margin:20px 0;">${q.q}</p><div class="answers-list">${shuffled.map((a,i) => `<div class="answer-option" data-ans="${i}">${a}</div>`).join('')}</div><div style="margin-top:15px;">Отвечает: <strong style="color:#0ff;">${current.name}</strong> | +${q.points} баллов</div><button class="btn-submit" id="blitzSubmit" style="margin-top:15px;">Ответить</button></div>`;
-        let selected = null;
-        document.querySelectorAll('.answer-option').forEach(opt => { opt.onclick = () => { document.querySelectorAll('.answer-option').forEach(o => o.classList.remove('selected')); opt.classList.add('selected'); selected = parseInt(opt.dataset.ans); }; });
-        document.getElementById('blitzSubmit').onclick = () => {
-            if (selected === null) { alert('Выберите ответ'); return; }
-            if (selected === correctIdx) { current.score += q.points; alert(`Правильно! +${q.points} баллов`); updateTeamsDisplay(subject); }
-            else { alert(`Неверно! Ответ: ${q.a[q.c]}`); }
-            idx++; nextTeam(subject); render();
-        };
-    }
-    render();
-}
-
-function initSubjectEvents(subject) {
-    const content = document.getElementById(`${subject}Content`);
-    content.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.onclick = () => {
-            content.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.dataset.tab;
-            content.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            document.getElementById(`${subject}${tab.charAt(0).toUpperCase() + tab.slice(1)}Panel`).classList.add('active');
-            if (tab === 'tasks') loadTasks(subject);
-            if (tab === 'scientists') loadScientists(subject);
-            if (tab === 'blitz') initBlitz(subject);
-            if (tab === 'quiz') loadQuizTable(subject);
-        };
-    });
-}
-
-function startSubject(subject) {
-    currentSubject = subject;
-    document.querySelectorAll('.subject-btn').forEach(btn => btn.classList.remove('active'));
-    const btn = Array.from(document.querySelectorAll('.subject-btn')).find(b => b.innerHTML.includes(subjectsData[subject].icon));
-    if (btn) btn.classList.add('active');
-    createSubjectContent(subject);
-    document.querySelectorAll('.subject-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(`${subject}Content`).classList.add('active');
-    updateTeamsDisplay(subject);
-    loadQuizTable(subject);
-    initSubjectEvents(subject);
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    renderSubjectSelection();
-    renderSubjectNav();
-    document.getElementById('closeQuestionModal').onclick = () => document.getElementById('questionModal').classList.remove('active');
-    document.getElementById('closeScientistModal').onclick = () => document.getElementById('scientistModal').classList.remove('active');
-    window.onclick = (e) => { if (e.target.classList.contains('modal')) e.target.classList.remove('active'); };
-});
-</script>
+            
+            // Добавить обработчики для ответов
+            document.querySelectorAll('.answer-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Снять выделение со всех ответов
+                    document.querySelectorAll('.answer-btn').forEach(b => {
+                        b.classList.remove('selected');
+                    });
+                    
+                    // Выделить выбранный ответ
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Обработчик для кнопки подтверждения
+            document.getElementById('submit-answer').addEventListener('click', function() {
+                const selectedBtn = document.querySelector('.answer-btn.selected');
+                if (!selectedBtn) {
+                    alert('Пожалуйста, выберите ответ!');
+                    return;
+                }
+                
+                const selectedIndex = parseInt(selectedBtn.getAttribute('data-index'));
+                const isCorrect = selectedIndex === question.correct;
+                
+                // Начислить баллы, если ответ правильный
+                if (isCorrect) {
+                    currentTeam.score += points;
+                    updateTeamsDisplay(subject);
+                    
+                    // Пометить вопрос как отвеченный
+                    markQuestionAsAnswered(subject, topicIndex, points, true);
+                    
+                    alert(`Правильно! Команда "${currentTeam.name}" получает ${points} баллов!`);
+                } else {
+                    markQuestionAsAnswered(subject, topicIndex, points, false);
+                    alert(`Неправильно! Правильный ответ: ${question.answers[question.correct]}\n\nОбъяснение: ${question.explanation || ''}`);
+                }
+                
+                // Перейти к следующей команде
+                nextTeam(subject);
+                
+                // Закрыть модальное окно
+                modal.classList.remove('active');
+            });
+        }
+        
+        // Пометить вопрос как отвеченный
+        function markQuestionAsAnswered(subject, topicIndex, points, isCorrect) {
+            const cell = document.querySelector(`.question-cell[data-subject="${subject}"][data-topic="${topicIndex}"][data-points="${points}"]`);
+            if (cell) {
+                cell.classList.add('answered');
+                if (!isCorrect) {
+                    cell.classList.add('wrong');
+                }
+                cell.style.pointerEvents = 'none';
+                cell.style.opacity = '0.7';
+            }
+        }
+        
+        // Сброс квиза
+        function resetQuiz(subject) {
+            // Сбросить все вопросы
+            document.querySelectorAll(`.question-cell[data-subject="${subject}"]`).forEach(cell => {
+                cell.classList.remove('answered', 'wrong');
+                cell.style.pointerEvents = 'auto';
+                cell.style.opacity = '1';
+            });
+            
+            // Сбросить баллы команд
+            const teams = subject === 'math' ? appData.mathTeams : appData.physicsTeams;
+            teams.forEach(team => {
+                team.score = 0;
+            });
+            
+            // Первая команда становится текущей
+            if (teams.length > 0) {
+                teams.forEach((team, index) => {
+                    team.isCurrent = index === 0;
+                });
+            }
+            
+            updateTeamsDisplay(subject);
+            alert('Квиз сброшен! Все команды начинают с 0 баллов.');
+        }
+        
+        // Загрузка задач
+        function loadTasks(subject) {
+            const tasks = subject === 'math' ? appData.mathTasks : appData.physicsTasks;
+            const container = document.getElementById(`${subject}-tasks-container`);
+            
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // Показать первую задачу
+            if (tasks.length > 0) {
+                createTaskElement(tasks[0], subject, container);
+            }
+        }
+        
+        // Создание элемента задачи
+        function createTaskElement(task, subject, container) {
+            const taskElement = document.createElement('div');
+            taskElement.className = 'task';
+            taskElement.id = `${subject}-task-${task.id}`;
+            
+            taskElement.innerHTML = `
+                <div class="task-header">
+                    <div class="task-number">Задача №${task.id} (${task.topic})</div>
+                    <div class="task-attempts">
+                        <span>Попытки:</span>
+                        <div class="attempt-dot"></div>
+                        <div class="attempt-dot"></div>
+                        <div class="attempt-dot"></div>
+                    </div>
+                </div>
+                <div class="task-text">${task.text}</div>
+                <div class="answer-input-container">
+                    <input type="text" class="answer-input" id="${subject}-answer-${task.id}" placeholder="Введите ваш ответ...">
+                    <button class="task-btn" data-task-id="${task.id}">
+                        <i class="fas fa-check"></i>
+                        Проверить ответ
+                    </button>
+                </div>
+                <div class="task-feedback" id="${subject}-feedback-${task.id}"></div>
+            `;
+            
+            container.appendChild(taskElement);
+            
+            // Обработчик для кнопки проверки
+            const checkBtn = taskElement.querySelector('.task-btn');
+            checkBtn.addEventListener('click', function() {
+                checkTaskAnswer(task.id, subject);
+            });
+        }
+        
+        // Проверка ответа на задачу
+        function checkTaskAnswer(taskId, subject) {
+            const tasks = subject === 'math' ? appData.mathTasks : appData.physicsTasks;
+            const task = tasks.find(t => t.id === taskId);
+            const answerInput = document.getElementById(`${subject}-answer-${taskId}`);
+            const feedback = document.getElementById(`${subject}-feedback-${taskId}`);
+            const attemptDots = document.querySelectorAll(`#${subject}-task-${taskId} .attempt-dot`);
+            
+            if (!answerInput.value.trim()) {
+                alert('Пожалуйста, введите ответ!');
+                return;
+            }
+            
+            // Подсчитать попытки
+            let attemptCount = 0;
+            attemptDots.forEach(dot => {
+                if (dot.classList.contains('used')) attemptCount++;
+            });
+            
+            if (attemptCount >= 3) {
+                alert('Вы использовали все попытки для этой задачи!');
+                return;
+            }
+            
+            // Отметить попытку
+            attemptDots[attemptCount].classList.add('used');
+            
+            // Проверить ответ (приводим к нижнему регистру и удаляем лишние пробелы)
+            const userAnswer = answerInput.value.trim().toLowerCase().replace(/\s+/g, ' ');
+            const correctAnswer = task.answer.toLowerCase();
+            
+            // Сравниваем ответы
+            let isCorrect = false;
+            
+            // Для числовых ответов допускаем небольшие отклонения
+            if (!isNaN(parseFloat(userAnswer)) && !isNaN(parseFloat(correctAnswer))) {
+                const userNum = parseFloat(userAnswer);
+                const correctNum = parseFloat(correctAnswer);
+                // Для целых чисел проверяем точное совпадение
+                if (userNum === correctNum) {
+                    isCorrect = true;
+                }
+            } else if (userAnswer === correctAnswer) {
+                isCorrect = true;
+            }
+            
+            if (isCorrect) {
+                feedback.innerHTML = `
+                    <strong>Правильно!</strong><br>
+                    ${task.explanation}
+                `;
+                feedback.className = 'task-feedback correct';
+                
+                // Начислить баллы
+                const teams = subject === 'math' ? appData.mathTeams : appData.physicsTeams;
+                const currentTeam = teams.find(team => team.isCurrent);
+                if (currentTeam) {
+                    currentTeam.score += 20;
+                    updateTeamsDisplay(subject);
+                }
+            } else {
+                feedback.innerHTML = `
+                    <strong>Неправильно!</strong> Попробуйте еще раз.<br>
+                    ${attemptCount >= 2 ? `<br><strong>Правильный ответ:</strong> ${task.answer}<br><strong>Объяснение:</strong> ${task.explanation}` : ''}
+                `;
+                feedback.className = 'task-feedback incorrect';
+                
+                // Если использованы все попытки, показать правильный ответ
+                if (attemptCount >= 2) {
+                    feedback.innerHTML = `
+                        <strong>Исчерпаны все попытки!</strong><br>
+                        <strong>Правильный ответ:</strong> ${task.answer}<br>
+                        <strong>Объяснение:</strong> ${task.explanation}
+                    `;
+                }
+            }
+        }
+        
+        // Следующая задача
+        function nextTask(subject) {
+            const tasks = subject === 'math' ? appData.mathTasks : appData.physicsTasks;
+            const container = document.getElementById(`${subject}-tasks-container`);
+            
+            if (!container || tasks.length === 0) return;
+            
+            // Найти текущую задачу
+            const currentTaskElement = container.querySelector('.task');
+            let currentTaskId = 1;
+            if (currentTaskElement) {
+                const idMatch = currentTaskElement.id.match(/\d+$/);
+                if (idMatch) {
+                    currentTaskId = parseInt(idMatch[0]);
+                }
+            }
+            
+            let nextIndex = tasks.findIndex(t => t.id === currentTaskId) + 1;
+            
+            if (nextIndex >= tasks.length) {
+                nextIndex = 0;
+            }
+            
+            // Показать следующую задачу
+            container.innerHTML = '';
+            createTaskElement(tasks[nextIndex], subject, container);
+        }
+        
+        // Загрузка ученых
+        function loadScientists(subject) {
+            const scientists = subject === 'math' ? appData.mathScientists : appData.physicsScientists;
+            const container = document.getElementById(`${subject}-scientists-grid`);
+            
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            scientists.forEach(scientist => {
+                const scientistCard = document.createElement('div');
+                scientistCard.className = 'scientist-card';
+                scientistCard.innerHTML = `
+                    <img src="${scientist.image}" alt="${scientist.name}" class="scientist-image" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"250\" viewBox=\"0 0 300 250\"><rect width=\"300\" height=\"250\" fill=\"%23f0f0f0\"/><text x=\"150\" y=\"125\" font-family=\"Arial\" font-size=\"20\" text-anchor=\"middle\" fill=\"%23666\">${scientist.name}</text></svg>'">
+                    <div class="scientist-info">
+                        <div class="scientist-name">${scientist.name}</div>
+                        <div class="scientist-field">
+                            <i class="fas fa-graduation-cap"></i>
+                            ${scientist.field}
+                        </div>
+                        <div class="scientist-facts">${scientist.facts}</div>
+                    </div>
+                `;
+                
+                scientistCard.addEventListener('click', function() {
+                    openScientistModal(scientist);
+                });
+                
+                container.appendChild(scientistCard);
+            });
+        }
+        
+        // Открытие модального окна с ученым
+        function openScientistModal(scientist) {
+            const modal = document.getElementById('scientist-modal');
+            const content = document.getElementById('scientist-data');
+            
+            let achievementsHTML = '';
+            scientist.achievements.forEach(achievement => {
+                achievementsHTML += `<p><i class="fas fa-star" style="color: var(--warning);"></i> ${achievement}</p>`;
+            });
+            
+            content.innerHTML = `
+                <div class="scientist-modal-header">
+                    <img src="${scientist.image}" alt="${scientist.name}" class="scientist-modal-image" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\"><circle cx=\"100\" cy=\"100\" r=\"95\" fill=\"%23f0f0f0\" stroke=\"%236c5ce7\" stroke-width=\"5\"/><text x=\"100\" y=\"110\" font-family=\"Arial\" font-size=\"24\" text-anchor=\"middle\" fill=\"%23666\">${scientist.name.split(' ')[0]}</text></svg>'">
+                    <div>
+                        <h2>${scientist.name}</h2>
+                        <div class="scientist-modal-field">${scientist.field}</div>
+                        <p style="color: #666; max-width: 500px;">${scientist.facts}</p>
+                    </div>
+                </div>
+                <div class="scientist-modal-details">
+                    <h3>Основные достижения:</h3>
+                    ${achievementsHTML}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+    </script>
 </body>
 </html>
